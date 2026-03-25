@@ -151,8 +151,7 @@ select option{background:var(--surface2);color:var(--text)}
       <input type="text" id="nomIn" placeholder="Nombre del QR" class="w-half">
     </div>
     <div class="row">
-      <select id="sectionSel" class="w-half"></select>
-      <select id="subSel" class="w-half"><option value="">Sin subseccion</option></select>
+      <select id="subSel" class="w-full"><option value="">Sin subseccion</option></select>
     </div>
 
     <label class="lbl" style="margin-top:12px">Origen del QR</label>
@@ -230,15 +229,12 @@ function initTabs() {
   tabs.innerHTML = SECTIONS.map(s =>
     '<button class="tab' + (s === currentSection ? ' active' : '') + '" onclick="switchSection(\'' + s + '\')">' + s + '</button>'
   ).join('');
-  const sel = document.getElementById('sectionSel');
-  sel.innerHTML = SECTIONS.map(s => '<option value="' + s + '"' + (s === currentSection ? ' selected' : '') + '>' + s + '</option>').join('');
 }
 
 function switchSection(s) {
   currentSection = s;
   currentSub = '';
   initTabs();
-  document.getElementById('sectionSel').value = s;
   renderFiltered();
   renderSubs();
 }
@@ -350,7 +346,7 @@ async function init() {
   initTabs();
   try {
     allItems = await read();
-    status('ok', 'Conectado — lista compartida activa');
+    status('ok', 'Conectado');
     renderSubs();
     renderFiltered();
     startPoll();
@@ -377,7 +373,7 @@ async function addQR() {
   const urlEl = document.getElementById('urlIn');
   const errEl = document.getElementById('errMsg');
   const isFile = document.querySelector('input[name="qrtype"]:checked').value === 'file';
-  const section = document.getElementById('sectionSel').value;
+  const section = currentSection;
   const subsection = document.getElementById('subSel').value || null;
 
   const creator = creatorEl.value.trim();
