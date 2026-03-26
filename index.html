@@ -623,7 +623,9 @@ function formatDate(d) {
 }
 
 function renderItem(it) {
-  const fileIcon = it.file_name ? '<span class="ibadge ibadge-file">' + getFileIcon(it.file_name) + ' ' + esc(it.file_name) + '</span>' : '';
+  const typeBadge = it.file_name
+    ? '<span class="ibadge ibadge-file">' + getFileType(it.file_name) + '</span>'
+    : '<span class="ibadge ibadge-file">URL</span>';
   return '<div class="item" draggable="true" ondragstart="onDragStart(event,' + it.id + ')" ondragend="onDragEnd(event)">' +
     '<div class="thumb" id="qr' + it.id + '"></div>' +
     '<div class="info">' +
@@ -631,7 +633,7 @@ function renderItem(it) {
       '<div class="iurl">' + esc(it.url) + '</div>' +
       '<div class="imeta">' +
         '<span class="ibadge ibadge-user">' + esc(it.creator || '?') + '</span>' +
-        fileIcon +
+        typeBadge +
         '<span class="ibadge ibadge-ok">Sin vencimiento</span>' +
         '<span class="idate"><span class="idate-lbl">Fecha de creacion:</span> ' + esc(it.date) + '</span>' +
       '</div>' +
@@ -647,6 +649,20 @@ function getFileIcon(name) {
   const ext = (name || '').split('.').pop().toLowerCase();
   const icons = { pdf:'PDF', doc:'DOC', docx:'DOC', xls:'XLS', xlsx:'XLS', ppt:'PPT', pptx:'PPT', png:'IMG', jpg:'IMG', jpeg:'IMG', gif:'IMG', svg:'IMG', webp:'IMG', mp4:'VID', zip:'ZIP', rar:'ZIP', csv:'CSV', txt:'TXT' };
   return icons[ext] || 'FILE';
+}
+
+function getFileType(name) {
+  const ext = (name || '').split('.').pop().toLowerCase();
+  const types = {
+    pdf:'PDF', doc:'Word', docx:'Word',
+    xls:'Excel', xlsx:'Excel', csv:'Excel',
+    ppt:'PowerPoint', pptx:'PowerPoint',
+    png:'PNG', jpg:'JPG', jpeg:'JPG', gif:'GIF', svg:'SVG', webp:'WEBP',
+    mp4:'Video', avi:'Video', mov:'Video', mkv:'Video',
+    zip:'ZIP', rar:'RAR', '7z':'7Z',
+    txt:'Texto', html:'HTML', xml:'XML', json:'JSON'
+  };
+  return types[ext] || ext.toUpperCase() || 'Archivo';
 }
 
 const logoImg = new Image();
