@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Redirigiendo...</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:#0a0a0f;color:#e8e8f0;font-family:Arial,sans-serif;display:flex;align-items:center;justify-content:center;min-height:100vh;text-align:center}
+.wrap{padding:40px 20px}
+.spinner{width:36px;height:36px;border:3px solid #2a2a3d;border-top-color:#F6931E;border-radius:50%;animation:spin .8s linear infinite;margin:0 auto 16px}
+@keyframes spin{to{transform:rotate(360deg)}}
+p{font-size:14px;color:#6b6b8a}
+a{color:#06b6d4;text-decoration:none}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="spinner"></div>
+  <p id="msg">Redirigiendo...</p>
+</div>
+<script>
+const BASE = 'https://vvzyrugtmyrnnhhqxwoo.supabase.co/rest/v1';
+const KEY = 'sb_publishable_LP4N8V3hpdwNkKdtiHXU5A_saj4FDf1';
+const HEADERS = { 'apikey': KEY, 'Authorization': 'Bearer ' + KEY };
+
+async function go() {
+  const params = new URLSearchParams(window.location.search);
+  const id = params.get('id');
+  if (!id) { document.getElementById('msg').textContent = 'ID no encontrado'; return; }
+
+  try {
+    // Get the QR record
+    const r = await fetch(BASE + '/qrcodes?id=eq.' + id + '&select=url,scans', { headers: HEADERS });
+    const data = await r.json();
+    if (!data.length) { document.getElementById('msg').innerHTML = 'QR no encontrado. <a href="./">Volver</a>'; return; }
+
+    const item = data[0];
+    const newScans = (item.scans || 0) + 1;
+
+    // Increment scan counter
+    fetch(BASE + '/qrcodes?id=eq.' + id, {
+      method: 'PATCH',
+      headers: { ...HEADERS, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ scans: newScans })
+    }).catch(() => {});
+
+    // Redirect
+    window.location.href = item.url;
+  } catch(e) {
+    document.getElementById('msg').innerHTML = 'Error al redirigir. <a href="./">Volver</a>';
+  }
+}
+
+go();
+</script>
+</body>
+</html>
