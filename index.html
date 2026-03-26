@@ -126,19 +126,17 @@ select option{background:var(--surface2);color:var(--text)}
 .item:hover{border-color:var(--accent);transform:translateX(3px)}
 .item-wrap.selected .item{border-color:var(--danger);background:rgba(239,68,68,.05)}
 /* Checkbox select */
-.item-check{width:18px;height:18px;border:2px solid var(--border);border-radius:5px;flex-shrink:0;display:flex;align-items:center;justify-content:center;transition:all .15s;cursor:pointer}
-.item-check:hover{border-color:var(--accent)}
+.item-check{width:18px;height:18px;border:2px solid var(--border);border-radius:4px;flex-shrink:0;display:flex;align-items:center;justify-content:center;transition:all .15s;cursor:pointer}
+.item-check:hover{border-color:var(--muted)}
 .item-wrap.selected .item-check{background:var(--danger);border-color:var(--danger)}
-.item-wrap.selected .item-check::after{content:'\\2713';color:#fff;font-size:12px;font-weight:700}
+.item-wrap.selected .item-check::after{content:'\\2713';color:#fff;font-size:11px}
 /* Bulk action bar */
-.bulk-bar{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(80px);background:var(--surface);border:1px solid var(--danger);border-radius:14px;padding:10px 20px;display:flex;align-items:center;gap:14px;z-index:60;transition:all .3s;opacity:0;pointer-events:none;box-shadow:0 8px 32px rgba(0,0,0,.4)}
-.bulk-bar.show{transform:translateX(-50%) translateY(0);opacity:1;pointer-events:all}
-.bulk-count{font-size:13px;font-weight:700;color:var(--text)}
-.bulk-count strong{color:var(--danger)}
-.bulk-btn{background:rgba(239,68,68,.1);border:1px solid var(--danger);border-radius:10px;padding:8px 18px;color:var(--danger);font-family:Syne,sans-serif;font-size:12px;font-weight:700;cursor:pointer;transition:all .15s}
-.bulk-btn:hover{background:var(--danger);color:#fff}
-.bulk-cancel{background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:8px 18px;color:var(--muted);font-family:Syne,sans-serif;font-size:12px;font-weight:600;cursor:pointer;transition:all .15s}
-.bulk-cancel:hover{border-color:var(--text);color:var(--text)}
+.bulk-bar{position:fixed;bottom:20px;right:20px;z-index:60;display:none;align-items:center;gap:8px}
+.bulk-bar.show{display:flex}
+.bulk-btn{background:var(--danger);border:none;border-radius:8px;padding:10px 16px;color:#fff;font-family:Arial,sans-serif;font-size:12px;font-weight:600;cursor:pointer}
+.bulk-btn:hover{opacity:.85}
+.bulk-cancel{background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:10px 14px;color:var(--muted);font-family:Arial,sans-serif;font-size:12px;cursor:pointer}
+.bulk-cancel:hover{color:var(--text)}
 @keyframes slideIn{from{opacity:0;transform:translateY(-8px)}to{opacity:1;transform:translateY(0)}}
 .thumb{width:56px;height:56px;flex-shrink:0;border-radius:8px;overflow:hidden;background:#fff;display:flex;align-items:center;justify-content:center}
 .thumb canvas,.thumb img{max-width:100%;max-height:100%}
@@ -285,9 +283,8 @@ select option{background:var(--surface2);color:var(--text)}
 </div>
 
 <div class="bulk-bar" id="bulkBar">
-  <span class="bulk-count"><strong id="bulkCount">0</strong> seleccionados</span>
-  <button class="bulk-btn" onclick="bulkDelete()">Eliminar seleccionados</button>
   <button class="bulk-cancel" onclick="clearSelection()">Cancelar</button>
+  <button class="bulk-btn" onclick="bulkDelete()">Eliminar</button>
 </div>
 <div class="modal-bg" id="modalBg" onclick="closeModal()">
   <div class="modal" onclick="event.stopPropagation()">
@@ -924,9 +921,7 @@ function toggleSelect(id) {
 }
 
 function updateBulkBar() {
-  const bar = document.getElementById('bulkBar');
-  document.getElementById('bulkCount').textContent = selectedIds.size;
-  bar.classList.toggle('show', selectedIds.size > 0);
+  document.getElementById('bulkBar').classList.toggle('show', selectedIds.size > 0);
 }
 
 function clearSelection() {
