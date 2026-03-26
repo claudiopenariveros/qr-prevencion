@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Generador de codigo QR</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js" defer></script>
 <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Syne:wght@400;600;800&display=swap" rel="stylesheet">
 <style>
 :root{--bg:#0a0a0f;--surface:#13131a;--surface2:#1c1c28;--border:#2a2a3d;--accent:#F6931E;--accent2:#06b6d4;--text:#e8e8f0;--muted:#6b6b8a;--ok:#10b981;--danger:#ef4444;--green:#22c55e}
@@ -250,7 +250,7 @@ select option{background:var(--surface2);color:var(--text)}
     </div>
 
     <div id="fileWrap" style="display:none">
-      <div class="upload-zone" id="dropZone" onclick="document.getElementById('fileIn').click()">
+      <div class="upload-zone" id="dropZone">
         <div class="upload-ico">&#128196;</div>
         <div class="upload-txt" id="uploadTxt">Arrastra archivos o <strong>haz clic para seleccionar</strong></div>
         <div class="upload-hint">Word, Excel, PowerPoint, PDF, imagenes y mas (max 50MB)</div>
@@ -337,6 +337,7 @@ function toggleType() {
 // File handling
 const dropZone = document.getElementById('dropZone');
 const fileIn = document.getElementById('fileIn');
+dropZone.addEventListener('click', () => fileIn.click());
 dropZone.addEventListener('dragover', e => { e.preventDefault(); dropZone.classList.add('dragover'); });
 dropZone.addEventListener('dragleave', () => dropZone.classList.remove('dragover'));
 dropZone.addEventListener('drop', e => {
@@ -555,6 +556,7 @@ async function init() {
 
 function startPoll() {
   setInterval(async () => {
+    if (document.hidden) return;
     try {
       const items = await read();
       const sig = JSON.stringify(items);
@@ -891,19 +893,17 @@ function goUrl(id) {
 function makeQR(elId, url, displaySize) {
   const c = document.getElementById(elId);
   if (!c) return; c.innerHTML = '';
-  const renderSize = 256;
+  const renderSize = displaySize > 100 ? 256 : 200;
   try {
     new QRCode(c, { text: url, width: renderSize, height: renderSize, colorDark: '#000', colorLight: '#fff', correctLevel: QRCode.CorrectLevel.H });
-    setTimeout(() => {
-      const cv = c.querySelector('canvas');
-      if (cv) {
-        stampLogo(cv);
-        cv.style.width = displaySize + 'px';
-        cv.style.height = displaySize + 'px';
-      }
-      const img = c.querySelector('img');
-      if (img) { img.style.width = displaySize + 'px'; img.style.height = displaySize + 'px'; }
-    }, 80);
+    requestAnimationFrame(() => {
+      setTimeout(() => {
+        const cv = c.querySelector('canvas');
+        if (cv) { stampLogo(cv); cv.style.width = displaySize + 'px'; cv.style.height = displaySize + 'px'; }
+        const img = c.querySelector('img');
+        if (img) { img.style.width = displaySize + 'px'; img.style.height = displaySize + 'px'; }
+      }, 20);
+    });
   } catch(e) {}
 }
 
@@ -918,8 +918,8 @@ function dlQR(name, id) {
       stampLogo(cv);
       const a = document.createElement('a'); a.download = name + '.png'; a.href = cv.toDataURL('image/png'); a.click(); toast('Descargado: ' + name, 'ok');
     }
-    document.body.removeChild(tmp);
-  }, 250);
+    tmp.remove();
+  }, 100);
 }
 
 function toast(msg, type) {
