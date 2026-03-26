@@ -648,10 +648,44 @@ function getFileIcon(name) {
   return icons[ext] || 'FILE';
 }
 
+const logoImg = new Image();
+logoImg.src = 'logo.png';
+
+function stampLogo(cv, logoSize) {
+  if (!logoImg.complete || !logoImg.naturalWidth) return;
+  const ctx = cv.getContext('2d');
+  const s = logoSize || Math.round(cv.width * 0.22);
+  const pad = Math.round(s * 0.12);
+  const x = (cv.width - s) / 2;
+  const y = (cv.height - s) / 2;
+  // white rounded rect background
+  const r = Math.round(s * 0.15);
+  ctx.fillStyle = '#fff';
+  ctx.beginPath();
+  ctx.moveTo(x - pad + r, y - pad);
+  ctx.lineTo(x + s + pad - r, y - pad);
+  ctx.quadraticCurveTo(x + s + pad, y - pad, x + s + pad, y - pad + r);
+  ctx.lineTo(x + s + pad, y + s + pad - r);
+  ctx.quadraticCurveTo(x + s + pad, y + s + pad, x + s + pad - r, y + s + pad);
+  ctx.lineTo(x - pad + r, y + s + pad);
+  ctx.quadraticCurveTo(x - pad, y + s + pad, x - pad, y + s + pad - r);
+  ctx.lineTo(x - pad, y - pad + r);
+  ctx.quadraticCurveTo(x - pad, y - pad, x - pad + r, y - pad);
+  ctx.closePath();
+  ctx.fill();
+  // draw logo with grey bg behind it
+  ctx.fillStyle = '#4a4a4a';
+  ctx.fillRect(x, y, s, s);
+  ctx.drawImage(logoImg, x, y, s, s);
+}
+
 function makeQR(elId, url, size) {
   const c = document.getElementById(elId);
   if (!c) return; c.innerHTML = '';
-  try { new QRCode(c, { text: url, width: size, height: size, colorDark: '#000', colorLight: '#fff', correctLevel: QRCode.CorrectLevel.H }); } catch(e) {}
+  try {
+    new QRCode(c, { text: url, width: size, height: size, colorDark: '#000', colorLight: '#fff', correctLevel: QRCode.CorrectLevel.H });
+    setTimeout(() => { const cv = c.querySelector('canvas'); if (cv) stampLogo(cv); }, 50);
+  } catch(e) {}
 }
 
 function dlQR(name, url) {
@@ -661,7 +695,10 @@ function dlQR(name, url) {
   new QRCode(tmp, { text: url, width: 512, height: 512, colorDark: '#000', colorLight: '#fff', correctLevel: QRCode.CorrectLevel.H });
   setTimeout(() => {
     const cv = tmp.querySelector('canvas');
-    if (cv) { const a = document.createElement('a'); a.download = name + '.png'; a.href = cv.toDataURL('image/png'); a.click(); toast('Descargado: ' + name, 'ok'); }
+    if (cv) {
+      stampLogo(cv);
+      const a = document.createElement('a'); a.download = name + '.png'; a.href = cv.toDataURL('image/png'); a.click(); toast('Descargado: ' + name, 'ok');
+    }
     document.body.removeChild(tmp);
   }, 250);
 }
