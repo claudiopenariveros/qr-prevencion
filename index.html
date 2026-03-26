@@ -218,6 +218,7 @@ input::placeholder{color:var(--muted)}
     <div class="status">
       <span class="sdot" id="sdot"></span>
       <span class="stxt" id="stxt">Inicializando...</span>
+      <span style="margin-left:12px;font-size:10px;font-family:'Space Mono',monospace;color:var(--muted)">&#128100; <span id="onlineCount">1</span> en linea</span>
     </div>
   </header>
 
@@ -998,6 +999,23 @@ function toggleTheme() {
     document.getElementById('themeTxt').textContent = 'DIA';
   }
 })();
+
+// Presence
+const UID = localStorage.getItem('uid') || (()=>{ const u = Date.now().toString(36) + Math.random().toString(36).slice(2,7); localStorage.setItem('uid', u); return u; })();
+async function heartbeat() {
+  try {
+    await fetch(BASE + '/presence', {
+      method: 'POST',
+      headers: { ...HEADERS, 'Content-Type': 'application/json', 'Prefer': 'resolution=merge-duplicates' },
+      body: JSON.stringify({ uid: UID, last_seen: new Date().toISOString() })
+    });
+    const r = await fetch(BASE + '/presence?last_seen=gte.' + new Date(Date.now() - 15000).toISOString() + '&select=uid', { headers: HEADERS });
+    const d = await r.json();
+    document.getElementById('onlineCount').textContent = d.length || 1;
+  } catch(_) {}
+}
+heartbeat();
+setInterval(heartbeat, 8000);
 
 init();
 </script>
