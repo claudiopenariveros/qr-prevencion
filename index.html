@@ -116,7 +116,7 @@ select option{background:var(--surface2);color:var(--text)}
 .item.dragging{opacity:.4;transform:scale(.97)}
 @keyframes slideIn{from{opacity:0;transform:translateY(-8px)}to{opacity:1;transform:translateY(0)}}
 .thumb{width:56px;height:56px;flex-shrink:0;border-radius:8px;overflow:hidden;background:#fff;display:flex;align-items:center;justify-content:center}
-.thumb canvas,.thumb img{width:56px!important;height:56px!important}
+.thumb canvas,.thumb img{max-width:100%;max-height:100%}
 .info{flex:1;min-width:0}
 .iname{font-size:13px;font-weight:600;margin-bottom:2px;color:var(--text)}
 .iurl{font-family:"Space Mono",monospace;font-size:10px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
@@ -710,12 +710,22 @@ function stampLogo(cv) {
   ctx.drawImage(logoImg, x, y, w, h);
 }
 
-function makeQR(elId, url, size) {
+function makeQR(elId, url, displaySize) {
   const c = document.getElementById(elId);
   if (!c) return; c.innerHTML = '';
+  const renderSize = 256;
   try {
-    new QRCode(c, { text: url, width: size, height: size, colorDark: '#000', colorLight: '#fff', correctLevel: QRCode.CorrectLevel.H });
-    setTimeout(() => { const cv = c.querySelector('canvas'); if (cv) stampLogo(cv); }, 50);
+    new QRCode(c, { text: url, width: renderSize, height: renderSize, colorDark: '#000', colorLight: '#fff', correctLevel: QRCode.CorrectLevel.H });
+    setTimeout(() => {
+      const cv = c.querySelector('canvas');
+      if (cv) {
+        stampLogo(cv);
+        cv.style.width = displaySize + 'px';
+        cv.style.height = displaySize + 'px';
+      }
+      const img = c.querySelector('img');
+      if (img) { img.style.width = displaySize + 'px'; img.style.height = displaySize + 'px'; }
+    }, 80);
   } catch(e) {}
 }
 
@@ -723,7 +733,7 @@ function dlQR(name, url) {
   const tmp = document.createElement('div');
   tmp.style.cssText = 'position:absolute;left:-9999px;top:-9999px;';
   document.body.appendChild(tmp);
-  new QRCode(tmp, { text: url, width: 512, height: 512, colorDark: '#000', colorLight: '#fff', correctLevel: QRCode.CorrectLevel.H });
+  new QRCode(tmp, { text: url, width: 1024, height: 1024, colorDark: '#000', colorLight: '#fff', correctLevel: QRCode.CorrectLevel.H });
   setTimeout(() => {
     const cv = tmp.querySelector('canvas');
     if (cv) {
