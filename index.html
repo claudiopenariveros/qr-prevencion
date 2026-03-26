@@ -3,22 +3,21 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Generador de codigo QR — Grupo MSI Prevencion</title>
+<title>Generador de codigo QR</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Syne:wght@400;600;800&display=swap" rel="stylesheet">
 <style>
-:root{--bg:#0a0a0f;--surface:#13131a;--surface2:#1c1c28;--border:#2a2a3d;--accent:#F6931E;--accent2:#06b6d4;--text:#e8e8f0;--muted:#6b6b8a;--ok:#10b981;--danger:#ef4444}
+:root{--bg:#0a0a0f;--surface:#13131a;--surface2:#1c1c28;--border:#2a2a3d;--accent:#F6931E;--accent2:#06b6d4;--text:#e8e8f0;--muted:#6b6b8a;--ok:#10b981;--danger:#ef4444;--green:#22c55e}
 *{margin:0;padding:0;box-sizing:border-box}
 body{background:var(--bg);color:var(--text);font-family:Syne,sans-serif;min-height:100vh}
-body::before{content:"";position:fixed;inset:0;background:radial-gradient(ellipse 80% 50% at 20% 20%,rgba(246,147,30,.07),transparent 60%),radial-gradient(ellipse 60% 40% at 80% 80%,rgba(6,182,212,.06),transparent 50%);pointer-events:none;z-index:0}
+body::before{content:"";position:fixed;inset:0;background:radial-gradient(ellipse 80% 50% at 20% 20%,rgba(34,197,94,.06),transparent 60%),radial-gradient(ellipse 60% 40% at 80% 80%,rgba(6,182,212,.05),transparent 50%);pointer-events:none;z-index:0}
 .wrap{max-width:960px;margin:0 auto;padding:32px 20px;position:relative;z-index:1}
-header{text-align:center;margin-bottom:32px}
-.badge{display:inline-flex;align-items:center;gap:8px;background:var(--surface2);border:1px solid var(--border);border-radius:999px;padding:5px 16px 5px 8px;font-family:"Space Mono",monospace;font-size:11px;color:var(--accent2);letter-spacing:.1em;text-transform:uppercase;margin-bottom:14px}
-.dot{width:8px;height:8px;background:var(--accent);border-radius:50%;animation:pulse 2s infinite}
+header{text-align:center;margin-bottom:28px}
+.badge{display:inline-flex;align-items:center;gap:8px;background:rgba(34,197,94,.08);border:1px solid rgba(34,197,94,.3);border-radius:999px;padding:5px 16px 5px 8px;font-family:"Space Mono",monospace;font-size:11px;color:var(--green);letter-spacing:.1em;text-transform:uppercase;margin-bottom:14px}
+.dot{width:8px;height:8px;background:var(--green);border-radius:50%;animation:pulse 2s infinite}
 @keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.5;transform:scale(.8)}}
 h1{font-size:clamp(24px,5vw,44px);font-weight:800;letter-spacing:-.03em;line-height:1.1;margin-bottom:8px}
-h1 span{background:linear-gradient(135deg,var(--accent),var(--accent2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
-.subtitle{font-size:13px;color:var(--muted);font-family:"Space Mono",monospace;margin-bottom:12px}
+h1 span{background:linear-gradient(135deg,var(--green),var(--accent2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
 .status{display:flex;align-items:center;justify-content:center;gap:8px}
 .sdot{width:8px;height:8px;border-radius:50%;background:var(--danger);flex-shrink:0;transition:background .3s}
 .sdot.ok{background:var(--ok);animation:pulse 2s infinite}
@@ -29,28 +28,28 @@ h1 span{background:linear-gradient(135deg,var(--accent),var(--accent2));-webkit-
 .tabs{display:flex;gap:6px;overflow-x:auto;padding-bottom:8px;margin-bottom:20px;scrollbar-width:none}
 .tabs::-webkit-scrollbar{display:none}
 .tab{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:9px 16px;color:var(--muted);font-family:Syne,sans-serif;font-size:12px;font-weight:600;cursor:pointer;white-space:nowrap;transition:all .2s}
-.tab:hover{border-color:var(--accent);color:var(--text)}
-.tab.active{background:var(--accent);border-color:var(--accent);color:#fff}
+.tab:hover{border-color:var(--green);color:var(--text)}
+.tab.active{background:var(--green);border-color:var(--green);color:#fff}
 
 /* Card */
 .card{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:22px;margin-bottom:20px;transition:border-color .3s}
-.card:focus-within{border-color:var(--accent)}
+.card:focus-within{border-color:var(--green)}
 .lbl{font-size:10px;font-weight:600;letter-spacing:.15em;text-transform:uppercase;color:var(--muted);margin-bottom:8px;display:block}
 .row{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px}
 .row:last-child{margin-bottom:0}
 input[type="text"],input[type="url"]{flex:1;min-width:140px;background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:11px 14px;color:var(--text);font-family:"Space Mono",monospace;font-size:12px;outline:none;transition:border-color .2s}
-input:focus{border-color:var(--accent)!important;background:#1a1a28}
+input:focus{border-color:var(--green)!important;background:#1a1a28}
 input::placeholder{color:var(--muted)}
 select{background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:11px 14px;color:var(--text);font-family:Syne,sans-serif;font-size:12px;outline:none;cursor:pointer;transition:border-color .2s;appearance:none;-webkit-appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='%236b6b8a'%3E%3Cpath d='M6 8L1 3h10z'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 12px center;padding-right:32px}
-select:focus{border-color:var(--accent)}
+select:focus{border-color:var(--green)}
 select option{background:var(--surface2);color:var(--text)}
 .w-full{width:100%}
 .w-half{width:calc(50% - 4px)}
 
 /* File upload */
 .upload-zone{border:2px dashed var(--border);border-radius:12px;padding:20px;text-align:center;cursor:pointer;transition:all .2s;background:var(--surface2)}
-.upload-zone:hover{border-color:var(--accent);background:rgba(246,147,30,.05)}
-.upload-zone.dragover{border-color:var(--accent);background:rgba(246,147,30,.08)}
+.upload-zone:hover{border-color:var(--green);background:rgba(34,197,94,.04)}
+.upload-zone.dragover{border-color:var(--green);background:rgba(34,197,94,.07)}
 .upload-zone.has-file{border-color:var(--ok);border-style:solid}
 .upload-ico{font-size:28px;margin-bottom:6px;opacity:.5}
 .upload-txt{font-size:12px;color:var(--muted)}
@@ -60,57 +59,71 @@ select option{background:var(--surface2);color:var(--text)}
 
 /* Buttons */
 .btn{border:none;border-radius:10px;padding:11px 20px;font-family:Syne,sans-serif;font-size:13px;font-weight:700;cursor:pointer;transition:all .15s;display:inline-flex;align-items:center;gap:6px}
-.btn-primary{background:var(--accent);color:#fff;box-shadow:0 4px 20px rgba(246,147,30,.3)}
-.btn-primary:hover{background:#e58215;transform:translateY(-1px);box-shadow:0 6px 28px rgba(246,147,30,.4)}
+.btn-primary{background:var(--green);color:#fff;box-shadow:0 4px 20px rgba(34,197,94,.3)}
+.btn-primary:hover{background:#16a34a;transform:translateY(-1px);box-shadow:0 6px 28px rgba(34,197,94,.4)}
 .btn-primary:disabled{opacity:.5;cursor:not-allowed;transform:none}
 .btn-sm{padding:7px 13px;font-size:11px;border-radius:8px}
 .btn-outline{background:none;border:1px solid var(--border);color:var(--muted)}
-.btn-outline:hover{border-color:var(--accent2);color:var(--accent2)}
-.btn-danger:hover{border-color:var(--danger);color:var(--danger)}
+.btn-outline:hover{border-color:var(--green);color:var(--green)}
 .err{font-size:11px;color:var(--danger);margin-top:6px;display:none}
 
-/* Subsection management */
-.sub-bar{display:flex;gap:6px;align-items:center;margin-bottom:16px;flex-wrap:wrap}
-.sub-tag{background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:6px 12px;font-size:11px;color:var(--muted);cursor:pointer;transition:all .2s;white-space:nowrap}
-.sub-tag:hover{border-color:var(--accent2);color:var(--text)}
-.sub-tag.active{background:rgba(6,182,212,.1);border-color:var(--accent2);color:var(--accent2)}
-.sub-input-wrap{display:flex;gap:4px}
-.sub-input-wrap input{width:140px;padding:6px 10px;font-size:11px;border-radius:8px}
-.sub-input-wrap .btn{padding:6px 10px;font-size:11px}
+/* Folders */
+.folder{background:var(--surface);border:1px solid var(--border);border-radius:14px;margin-bottom:14px;overflow:hidden;transition:border-color .2s}
+.folder.drag-over{border-color:var(--green);background:rgba(34,197,94,.03)}
+.folder-header{display:flex;align-items:center;justify-content:space-between;padding:14px 18px;cursor:pointer;user-select:none;transition:background .15s}
+.folder-header:hover{background:var(--surface2)}
+.folder-left{display:flex;align-items:center;gap:10px}
+.folder-ico{font-size:18px;transition:transform .2s}
+.folder.open .folder-ico{color:var(--green)}
+.folder-name{font-size:13px;font-weight:700;color:var(--text)}
+.folder-count{font-size:10px;font-family:"Space Mono",monospace;color:var(--muted);background:var(--surface2);border-radius:99px;padding:2px 8px}
+.folder-acts{display:flex;gap:4px}
+.folder-acts button{background:none;border:1px solid transparent;border-radius:6px;padding:4px 8px;font-size:11px;cursor:pointer;transition:all .15s;color:var(--muted);font-family:Syne,sans-serif}
+.folder-acts .f-del:hover{border-color:rgba(239,68,68,.4);color:var(--danger);background:rgba(239,68,68,.06)}
+.folder-body{display:none;padding:0 18px 14px}
+.folder.open .folder-body{display:block}
+.folder-empty{text-align:center;padding:20px;color:var(--muted);font-size:12px;border:2px dashed var(--border);border-radius:10px;margin-top:4px;transition:all .2s}
+.folder-empty.drag-over{border-color:var(--green);background:rgba(34,197,94,.05)}
+
+/* Create folder bar */
+.create-folder{display:flex;gap:6px;margin-bottom:18px;align-items:center}
+.create-folder input{flex:1;padding:10px 14px;font-size:12px;border-radius:10px}
 
 /* Stats */
-.stats{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
+.stats{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
 .sc{font-size:12px;color:var(--muted)}.sc strong{color:var(--accent2);font-family:"Space Mono",monospace}
-.btn-del-all{background:none;border:1px solid var(--border);border-radius:8px;padding:5px 12px;color:var(--muted);font-family:Syne,sans-serif;font-size:11px;cursor:pointer;transition:all .2s}
-.btn-del-all:hover{border-color:var(--danger);color:var(--danger)}
 
 /* Empty */
 .empty{text-align:center;padding:48px 20px;color:var(--muted)}
 .empty-ico{font-size:36px;margin-bottom:10px;opacity:.4}
 
-/* List */
-.list{display:flex;flex-direction:column;gap:10px}
-.section-group{margin-bottom:16px}
-.section-title{font-size:11px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:var(--accent2);margin-bottom:8px;padding-left:4px}
-.item{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:14px 18px;display:flex;align-items:center;gap:16px;animation:slideIn .3s ease;transition:border-color .2s,transform .2s}
-.item:hover{border-color:var(--accent);transform:translateX(3px)}
+/* Items */
+.list{display:flex;flex-direction:column;gap:8px;min-height:8px}
+.item{background:var(--surface2);border:1px solid var(--border);border-radius:12px;padding:12px 16px;display:flex;align-items:center;gap:14px;transition:all .2s;cursor:grab}
+.item:active{cursor:grabbing}
+.item:hover{border-color:var(--green);transform:translateX(3px)}
+.item.dragging{opacity:.4;transform:scale(.97)}
 @keyframes slideIn{from{opacity:0;transform:translateY(-8px)}to{opacity:1;transform:translateY(0)}}
-.thumb{width:64px;height:64px;flex-shrink:0;border-radius:8px;overflow:hidden;background:#fff;display:flex;align-items:center;justify-content:center}
-.thumb canvas,.thumb img{width:64px!important;height:64px!important}
+.thumb{width:56px;height:56px;flex-shrink:0;border-radius:8px;overflow:hidden;background:#fff;display:flex;align-items:center;justify-content:center}
+.thumb canvas,.thumb img{width:56px!important;height:56px!important}
 .info{flex:1;min-width:0}
-.iname{font-size:13px;font-weight:600;margin-bottom:3px;color:var(--text)}
+.iname{font-size:13px;font-weight:600;margin-bottom:2px;color:var(--text)}
 .iurl{font-family:"Space Mono",monospace;font-size:10px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.imeta{font-size:10px;color:var(--muted);margin-top:4px;display:flex;align-items:center;gap:6px;flex-wrap:wrap}
-.ibadge{display:inline-flex;align-items:center;gap:3px;border-radius:999px;padding:2px 8px;font-size:9px;font-weight:600}
+.imeta{font-size:10px;color:var(--muted);margin-top:3px;display:flex;align-items:center;gap:5px;flex-wrap:wrap}
+.ibadge{display:inline-flex;align-items:center;gap:3px;border-radius:999px;padding:2px 7px;font-size:9px;font-weight:600}
 .ibadge-ok{background:rgba(16,185,129,.1);border:1px solid rgba(16,185,129,.3);color:var(--ok)}
 .ibadge-file{background:rgba(6,182,212,.1);border:1px solid rgba(6,182,212,.3);color:var(--accent2)}
 .ibadge-user{background:rgba(246,147,30,.1);border:1px solid rgba(246,147,30,.3);color:var(--accent)}
 .acts{display:flex;gap:5px;flex-shrink:0}
-.btn-a{background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:7px 12px;color:var(--text);font-family:Syne,sans-serif;font-size:11px;font-weight:600;cursor:pointer;transition:all .2s;display:flex;align-items:center;gap:4px}
+.btn-a{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:6px 10px;color:var(--text);font-family:Syne,sans-serif;font-size:10px;font-weight:600;cursor:pointer;transition:all .2s;display:flex;align-items:center;gap:4px}
 .btn-dl{border-color:rgba(6,182,212,.4);color:var(--accent2)}
 .btn-dl:hover{background:rgba(6,182,212,.1);border-color:var(--accent2)}
 .btn-rm{border-color:transparent;color:var(--muted)}
 .btn-rm:hover{border-color:rgba(239,68,68,.4);color:var(--danger);background:rgba(239,68,68,.08)}
+
+/* No-folder items */
+.no-folder-items{margin-bottom:14px}
+.no-folder-label{font-size:10px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin-bottom:8px}
 
 /* Toast */
 .toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(16px);background:var(--surface2);border-radius:10px;padding:10px 20px;font-size:12px;font-weight:600;opacity:0;transition:all .3s;pointer-events:none;z-index:100;max-width:90vw;text-align:center}
@@ -118,7 +131,6 @@ select option{background:var(--surface2);color:var(--text)}
 .toast.err-t{border:1px solid var(--danger);color:var(--danger)}
 .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
 
-/* Responsive */
 @media(max-width:640px){
   .row{flex-direction:column}
   .w-half{width:100%}
@@ -131,27 +143,31 @@ select option{background:var(--surface2);color:var(--text)}
 <body>
 <div class="wrap">
   <header>
-    <div class="badge"><span class="dot"></span> prevencion</div>
+    <div class="badge"><span class="dot"></span> Prevencion de riesgo</div>
     <h1>Generador de <span>codigo QR</span></h1>
-    <div class="subtitle">Grupo MSI &mdash; Prevencion de Riesgos</div>
     <div class="status">
       <span class="sdot" id="sdot"></span>
       <span class="stxt" id="stxt">Inicializando...</span>
     </div>
   </header>
 
-  <!-- Section Tabs -->
   <div class="tabs" id="tabs"></div>
+
+  <!-- Create folder -->
+  <div class="create-folder">
+    <input type="text" id="newFolderIn" placeholder="Nombre de nueva carpeta...">
+    <button class="btn btn-sm btn-outline" onclick="addFolder()">+ Crear carpeta</button>
+  </div>
 
   <!-- Create QR Form -->
   <div class="card" id="formCard">
     <label class="lbl">Nuevo codigo QR</label>
     <div class="row">
-      <input type="text" id="creatorIn" placeholder="Tu nombre (obligatorio)" class="w-half" style="border-color:var(--accent)">
+      <input type="text" id="creatorIn" placeholder="Tu nombre (obligatorio)" class="w-half" style="border-color:var(--green)">
       <input type="text" id="nomIn" placeholder="Nombre del QR" class="w-half">
     </div>
     <div class="row">
-      <select id="subSel" class="w-full"><option value="">Sin subseccion</option></select>
+      <select id="subSel" class="w-full"></select>
     </div>
 
     <label class="lbl" style="margin-top:12px">Origen del QR</label>
@@ -183,24 +199,14 @@ select option{background:var(--surface2);color:var(--text)}
     </div>
   </div>
 
-  <!-- Subsection management -->
-  <div class="sub-bar" id="subBar">
-    <span class="sub-tag active" data-sub="" onclick="filterSub(this,'')">Todos</span>
-    <div class="sub-input-wrap" id="subAdd">
-      <input type="text" id="newSubIn" placeholder="Nueva subseccion...">
-      <button class="btn btn-sm btn-outline" onclick="addSub()">+ Crear</button>
-    </div>
-  </div>
-
   <!-- Stats -->
   <div class="stats" id="stats" style="display:none">
-    <span class="sc">Total: <strong id="total">0</strong> codigos en esta seccion</span>
-    <button class="btn-del-all" onclick="deleteSection()">Eliminar seccion</button>
+    <span class="sc">Total: <strong id="total">0</strong> codigos en <strong id="secName"></strong></span>
   </div>
 
   <div class="empty" id="empty">
     <div class="empty-ico">&#9638;</div>
-    <p>No hay codigos QR en esta seccion. Crea uno arriba.</p>
+    <p>No hay codigos QR en esta seccion. Crea una carpeta y agrega codigos.</p>
   </div>
 
   <div id="listContainer"></div>
@@ -216,27 +222,22 @@ const HEADERS = { 'apikey': KEY, 'Authorization': 'Bearer ' + KEY };
 
 const SECTIONS = ['MEL','COLOSO','SPENCE','CASERONES','CORDILLERA','PUERTO','SIERRA GORDA'];
 let currentSection = SECTIONS[0];
-let currentSub = '';
 let allItems = [];
-let allSubs = {};
 let busy = false;
 let lastSig = '';
 let selectedFile = null;
+let dragId = null;
 
-// Init
 function initTabs() {
-  const tabs = document.getElementById('tabs');
-  tabs.innerHTML = SECTIONS.map(s =>
+  document.getElementById('tabs').innerHTML = SECTIONS.map(s =>
     '<button class="tab' + (s === currentSection ? ' active' : '') + '" onclick="switchSection(\'' + s + '\')">' + s + '</button>'
   ).join('');
 }
 
 function switchSection(s) {
   currentSection = s;
-  currentSub = '';
   initTabs();
-  renderFiltered();
-  renderSubs();
+  renderAll();
 }
 
 function toggleType() {
@@ -248,7 +249,6 @@ function toggleType() {
 // File handling
 const dropZone = document.getElementById('dropZone');
 const fileIn = document.getElementById('fileIn');
-
 dropZone.addEventListener('dragover', e => { e.preventDefault(); dropZone.classList.add('dragover'); });
 dropZone.addEventListener('dragleave', () => dropZone.classList.remove('dragover'));
 dropZone.addEventListener('drop', e => {
@@ -263,9 +263,7 @@ function handleFile() {
   selectedFile = f;
   dropZone.classList.add('has-file');
   document.getElementById('uploadTxt').innerHTML = '<span class="upload-file">' + esc(f.name) + ' (' + formatSize(f.size) + ')</span>';
-  if (!document.getElementById('nomIn').value) {
-    document.getElementById('nomIn').value = f.name.replace(/\.[^.]+$/, '');
-  }
+  if (!document.getElementById('nomIn').value) document.getElementById('nomIn').value = f.name.replace(/\.[^.]+$/, '');
 }
 
 function formatSize(b) {
@@ -274,46 +272,109 @@ function formatSize(b) {
   return (b/1048576).toFixed(1) + ' MB';
 }
 
-// Subsections
-function getSubs() {
-  const subs = new Set();
-  allItems.filter(i => i.section === currentSection && i.subsection).forEach(i => subs.add(i.subsection));
-  return [...subs].sort();
+// Folders (subsections)
+function getFolders() {
+  const folders = new Set();
+  allItems.filter(i => i.section === currentSection && i.subsection).forEach(i => folders.add(i.subsection));
+  return [...folders].sort();
 }
 
-function renderSubs() {
-  const subs = getSubs();
-  const bar = document.getElementById('subBar');
-  const tags = ['<span class="sub-tag' + (!currentSub ? ' active' : '') + '" onclick="filterSub(this,\'\')">Todos</span>'];
-  subs.forEach(s => {
-    tags.push('<span class="sub-tag' + (currentSub === s ? ' active' : '') + '" onclick="filterSub(this,\'' + esc(s) + '\')">' + esc(s) + '</span>');
-  });
-  tags.push('<div class="sub-input-wrap"><input type="text" id="newSubIn" placeholder="Nueva subseccion..."><button class="btn btn-sm btn-outline" onclick="addSub()">+ Crear</button></div>');
-  bar.innerHTML = tags.join('');
-  updateSubSelect(subs);
-}
-
-function updateSubSelect(subs) {
+function updateFolderSelect() {
+  const folders = getFolders();
   const sel = document.getElementById('subSel');
-  sel.innerHTML = '<option value="">Sin subseccion</option>' + subs.map(s => '<option value="' + esc(s) + '">' + esc(s) + '</option>').join('');
+  if (!folders.length) {
+    sel.innerHTML = '<option value="">-- Crea una carpeta primero --</option>';
+  } else {
+    sel.innerHTML = folders.map(f => '<option value="' + esc(f) + '">' + esc(f) + '</option>').join('');
+  }
 }
 
-function filterSub(el, sub) {
-  currentSub = sub;
-  document.querySelectorAll('.sub-tag').forEach(t => t.classList.remove('active'));
-  el.classList.add('active');
-  renderFiltered();
-}
-
-function addSub() {
-  const inp = document.getElementById('newSubIn');
+function addFolder() {
+  const inp = document.getElementById('newFolderIn');
   const v = inp.value.trim();
-  if (!v) return;
+  if (!v) { inp.style.borderColor = 'var(--danger)'; setTimeout(() => inp.style.borderColor = '', 2000); return; }
   inp.value = '';
-  currentSub = v;
-  renderSubs();
-  renderFiltered();
-  toast('Subseccion "' + v + '" creada', 'ok');
+  // We add a placeholder item so the folder appears, then remove it
+  // Actually, folders exist based on items. We'll create a "virtual" folder by adding a hidden marker
+  // Better approach: store folders in localStorage + DB items
+  const existing = getFolders();
+  if (existing.includes(v)) { toast('La carpeta "' + v + '" ya existe', 'err'); return; }
+  // Save to local virtual folders
+  const vf = getVirtualFolders();
+  if (!vf.includes(v)) { vf.push(v); setVirtualFolders(vf); }
+  toast('Carpeta "' + v + '" creada', 'ok');
+  renderAll();
+}
+
+function getVirtualFolders() {
+  try { return JSON.parse(localStorage.getItem('vf_' + currentSection) || '[]'); } catch(_) { return []; }
+}
+function setVirtualFolders(arr) {
+  localStorage.setItem('vf_' + currentSection, JSON.stringify(arr));
+}
+function getAllFolders() {
+  const fromItems = getFolders();
+  const virtual = getVirtualFolders();
+  const all = new Set([...fromItems, ...virtual]);
+  return [...all].sort();
+}
+
+async function deleteFolder(folderName) {
+  const items = allItems.filter(i => i.section === currentSection && i.subsection === folderName);
+  let msg = 'Eliminar la carpeta "' + folderName + '"?';
+  if (items.length) msg += '\n\nSe eliminaran ' + items.length + ' codigo(s) QR dentro de esta carpeta.';
+  if (!confirm(msg)) return;
+  if (items.length && !confirm('CONFIRMAR: Estas seguro? Esta accion no se puede deshacer. Se eliminaran todos los codigos QR de "' + folderName + '".')) return;
+
+  try {
+    if (items.length) {
+      const r = await fetch(BASE + '/qrcodes?section=eq.' + encodeURIComponent(currentSection) + '&subsection=eq.' + encodeURIComponent(folderName), { method: 'DELETE', headers: HEADERS });
+      if (!r.ok) { const e = await r.json(); throw new Error(e.message); }
+      allItems = allItems.filter(i => !(i.section === currentSection && i.subsection === folderName));
+    }
+    const vf = getVirtualFolders().filter(f => f !== folderName);
+    setVirtualFolders(vf);
+    toast('Carpeta eliminada', 'ok');
+    renderAll();
+  } catch(e) { toast('Error: ' + e.message, 'err'); }
+}
+
+// Drag & Drop
+function onDragStart(e, id) {
+  dragId = id;
+  e.target.classList.add('dragging');
+  e.dataTransfer.effectAllowed = 'move';
+}
+function onDragEnd(e) {
+  e.target.classList.remove('dragging');
+  document.querySelectorAll('.drag-over').forEach(el => el.classList.remove('drag-over'));
+  dragId = null;
+}
+function onFolderDragOver(e) {
+  e.preventDefault();
+  e.currentTarget.classList.add('drag-over');
+}
+function onFolderDragLeave(e) {
+  e.currentTarget.classList.remove('drag-over');
+}
+async function onFolderDrop(e, folderName) {
+  e.preventDefault();
+  e.currentTarget.classList.remove('drag-over');
+  if (!dragId) return;
+  const item = allItems.find(i => i.id === dragId);
+  if (!item || item.subsection === folderName) return;
+
+  try {
+    const r = await fetch(BASE + '/qrcodes?id=eq.' + dragId, {
+      method: 'PATCH',
+      headers: { ...HEADERS, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ subsection: folderName })
+    });
+    if (!r.ok) { const e2 = await r.json(); throw new Error(e2.message); }
+    item.subsection = folderName;
+    renderAll();
+    toast('QR movido a "' + folderName + '"', 'ok');
+  } catch(e2) { toast('Error: ' + e2.message, 'err'); }
 }
 
 // API
@@ -342,13 +403,12 @@ function status(state, msg) {
 }
 
 async function init() {
-  status('loading', 'Conectando a Supabase...');
+  status('loading', 'Conectando...');
   initTabs();
   try {
     allItems = await read();
     status('ok', 'Conectado');
-    renderSubs();
-    renderFiltered();
+    renderAll();
     startPoll();
   } catch(e) {
     status('', 'Error: ' + e.message);
@@ -361,7 +421,7 @@ function startPoll() {
     try {
       const items = await read();
       const sig = JSON.stringify(items);
-      if (sig !== lastSig) { allItems = items; lastSig = sig; renderSubs(); renderFiltered(); }
+      if (sig !== lastSig) { allItems = items; lastSig = sig; renderAll(); }
     } catch(_) {}
   }, 1500);
 }
@@ -377,17 +437,17 @@ async function addQR() {
   const subsection = document.getElementById('subSel').value || null;
 
   const creator = creatorEl.value.trim();
-  if (!creator) { errEl.textContent = 'El nombre del creador es obligatorio'; errEl.style.display = 'block'; creatorEl.style.borderColor = 'var(--danger)'; setTimeout(() => { errEl.style.display='none'; creatorEl.style.borderColor='var(--accent)'; }, 3000); return; }
+  if (!creator) { showFormErr(errEl, 'El nombre del creador es obligatorio', creatorEl); return; }
+  if (!subsection) { showFormErr(errEl, 'Selecciona una carpeta (crea una si no hay)'); return; }
 
   let url = '', fileName = null;
-
   if (isFile) {
-    if (!selectedFile) { errEl.textContent = 'Selecciona un archivo'; errEl.style.display = 'block'; setTimeout(() => errEl.style.display='none', 3000); return; }
+    if (!selectedFile) { showFormErr(errEl, 'Selecciona un archivo'); return; }
     fileName = selectedFile.name;
   } else {
     url = urlEl.value.trim();
-    if (!url) { errEl.textContent = 'Ingresa una URL valida'; errEl.style.display = 'block'; urlEl.style.borderColor = 'var(--danger)'; setTimeout(() => { errEl.style.display='none'; urlEl.style.borderColor=''; }, 3000); return; }
-    try { const p = new URL(url); if (!['http:','https:'].includes(p.protocol)) throw 0; } catch(_) { errEl.textContent = 'URL invalida (debe ser https://...)'; errEl.style.display = 'block'; setTimeout(() => errEl.style.display='none', 3000); return; }
+    if (!url) { showFormErr(errEl, 'Ingresa una URL valida', urlEl); return; }
+    try { const p = new URL(url); if (!['http:','https:'].includes(p.protocol)) throw 0; } catch(_) { showFormErr(errEl, 'URL invalida (debe ser https://...)'); return; }
   }
 
   const name = nomEl.value.trim() || (isFile ? selectedFile.name : new URL(url).hostname);
@@ -401,9 +461,7 @@ async function addQR() {
   errEl.style.display = 'none';
 
   try {
-    if (isFile) {
-      url = await uploadFile(selectedFile);
-    }
+    if (isFile) url = await uploadFile(selectedFile);
     const r = await fetch(BASE + '/qrcodes', {
       method: 'POST',
       headers: { ...HEADERS, 'Content-Type': 'application/json', 'Prefer': 'return=representation' },
@@ -417,7 +475,7 @@ async function addQR() {
     document.getElementById('uploadTxt').innerHTML = 'Arrastra un archivo o <strong>haz clic para seleccionar</strong>';
 
     allItems = await read();
-    renderSubs(); renderFiltered();
+    renderAll();
     toast('QR creado y compartido', 'ok');
   } catch(e) {
     toast('Error: ' + e.message, 'err');
@@ -426,80 +484,98 @@ async function addQR() {
   }
 }
 
+function showFormErr(errEl, msg, inputEl) {
+  errEl.textContent = msg; errEl.style.display = 'block';
+  if (inputEl) { inputEl.style.borderColor = 'var(--danger)'; setTimeout(() => inputEl.style.borderColor = '', 3000); }
+  setTimeout(() => errEl.style.display = 'none', 3000);
+}
+
 async function removeQR(id) {
   if (!confirm('Eliminar este QR?')) return;
   try {
     const r = await fetch(BASE + '/qrcodes?id=eq.' + id, { method: 'DELETE', headers: HEADERS });
     if (!r.ok) { const e = await r.json(); throw new Error(e.message || r.status); }
     allItems = allItems.filter(i => i.id !== id);
-    renderFiltered();
+    renderAll();
   } catch(e) { toast('Error: ' + e.message, 'err'); }
 }
 
-async function deleteSection() {
-  if (!confirm('Eliminar TODOS los QRs de ' + currentSection + '?')) return;
-  try {
-    const r = await fetch(BASE + '/qrcodes?section=eq.' + encodeURIComponent(currentSection), { method: 'DELETE', headers: HEADERS });
-    if (!r.ok) { const e = await r.json(); throw new Error(e.message || r.status); }
-    allItems = allItems.filter(i => i.section !== currentSection);
-    renderSubs(); renderFiltered();
-  } catch(e) { toast('Error: ' + e.message, 'err'); }
-}
-
-function renderFiltered() {
-  let items = allItems.filter(i => i.section === currentSection);
-  if (currentSub) items = items.filter(i => i.subsection === currentSub);
-
+function renderAll() {
+  updateFolderSelect();
+  const sectionItems = allItems.filter(i => i.section === currentSection);
   const container = document.getElementById('listContainer');
   const empty = document.getElementById('empty');
   const stats = document.getElementById('stats');
-  document.getElementById('total').textContent = items.length;
+  const folders = getAllFolders();
 
-  if (!items.length) { empty.style.display='block'; stats.style.display='none'; container.innerHTML=''; return; }
-  empty.style.display='none'; stats.style.display='flex';
+  document.getElementById('total').textContent = sectionItems.length;
+  document.getElementById('secName').textContent = currentSection;
 
-  // Group by subsection
-  const groups = {};
-  items.forEach(it => {
-    const key = it.subsection || '__none__';
-    if (!groups[key]) groups[key] = [];
-    groups[key].push(it);
-  });
+  if (!sectionItems.length && !folders.length) {
+    empty.style.display = 'block'; stats.style.display = 'none'; container.innerHTML = ''; return;
+  }
+  empty.style.display = 'none';
+  stats.style.display = sectionItems.length ? 'flex' : 'none';
 
   let html = '';
-  const keys = Object.keys(groups).sort((a,b) => a === '__none__' ? 1 : b === '__none__' ? -1 : a.localeCompare(b));
-  keys.forEach(key => {
-    if (key !== '__none__' && keys.length > 1) {
-      html += '<div class="section-group"><div class="section-title">' + esc(key) + '</div>';
-    }
-    html += '<div class="list">';
-    groups[key].forEach(it => {
-      const fileIcon = it.file_name ? '<span class="ibadge ibadge-file">' + getFileIcon(it.file_name) + ' ' + esc(it.file_name) + '</span>' : '';
-      html += '<div class="item">' +
-        '<div class="thumb" id="qr' + it.id + '"></div>' +
-        '<div class="info">' +
-          '<div class="iname">' + esc(it.name) + '</div>' +
-          '<div class="iurl">' + esc(it.url) + '</div>' +
-          '<div class="imeta">' +
-            '<span class="ibadge ibadge-user">' + esc(it.creator || '?') + '</span>' +
-            fileIcon +
-            '<span class="ibadge ibadge-ok">Sin vencimiento</span>' +
-            esc(it.date) +
-          '</div>' +
-        '</div>' +
-        '<div class="acts">' +
-          '<button class="btn-a btn-dl" onclick="dlQR(\'' + esc(it.name) + '\',\'' + esc(it.url) + '\')">Descargar</button>' +
-          '<button class="btn-a btn-rm" onclick="removeQR(' + it.id + ')">&#10005;</button>' +
-        '</div>' +
-      '</div>';
-    });
+
+  // Render folders
+  folders.forEach(f => {
+    const fitems = sectionItems.filter(i => i.subsection === f);
+    html += '<div class="folder open" ondragover="onFolderDragOver(event)" ondragleave="onFolderDragLeave(event)" ondrop="onFolderDrop(event,\'' + esc(f) + '\')">';
+    html += '<div class="folder-header" onclick="this.parentElement.classList.toggle(\'open\')">';
+    html += '<div class="folder-left">';
+    html += '<span class="folder-ico">&#128193;</span>';
+    html += '<span class="folder-name">' + esc(f) + '</span>';
+    html += '<span class="folder-count">' + fitems.length + '</span>';
     html += '</div>';
-    if (key !== '__none__' && keys.length > 1) html += '</div>';
+    html += '<div class="folder-acts" onclick="event.stopPropagation()">';
+    html += '<button class="f-del" onclick="deleteFolder(\'' + esc(f) + '\')">Eliminar</button>';
+    html += '</div>';
+    html += '</div>';
+    html += '<div class="folder-body">';
+    if (!fitems.length) {
+      html += '<div class="folder-empty" ondragover="onFolderDragOver(event)" ondragleave="onFolderDragLeave(event)" ondrop="onFolderDrop(event,\'' + esc(f) + '\')">Arrastra codigos QR aqui</div>';
+    } else {
+      html += '<div class="list">';
+      fitems.forEach(it => { html += renderItem(it); });
+      html += '</div>';
+    }
+    html += '</div></div>';
   });
 
+  // Items without folder
+  const noFolder = sectionItems.filter(i => !i.subsection || !folders.includes(i.subsection));
+  if (noFolder.length) {
+    html += '<div class="no-folder-items"><div class="no-folder-label">Sin carpeta</div><div class="list">';
+    noFolder.forEach(it => { html += renderItem(it); });
+    html += '</div></div>';
+  }
+
   container.innerHTML = html;
-  items.forEach(it => makeQR('qr' + it.id, it.url, 64));
+  sectionItems.forEach(it => makeQR('qr' + it.id, it.url, 56));
   lastSig = JSON.stringify(allItems);
+}
+
+function renderItem(it) {
+  const fileIcon = it.file_name ? '<span class="ibadge ibadge-file">' + getFileIcon(it.file_name) + ' ' + esc(it.file_name) + '</span>' : '';
+  return '<div class="item" draggable="true" ondragstart="onDragStart(event,' + it.id + ')" ondragend="onDragEnd(event)">' +
+    '<div class="thumb" id="qr' + it.id + '"></div>' +
+    '<div class="info">' +
+      '<div class="iname">' + esc(it.name) + '</div>' +
+      '<div class="iurl">' + esc(it.url) + '</div>' +
+      '<div class="imeta">' +
+        '<span class="ibadge ibadge-user">' + esc(it.creator || '?') + '</span>' +
+        fileIcon +
+        '<span class="ibadge ibadge-ok">Sin vencimiento</span>' +
+        esc(it.date) +
+      '</div>' +
+    '</div>' +
+    '<div class="acts">' +
+      '<button class="btn-a btn-dl" onclick="dlQR(\'' + esc(it.name) + '\',\'' + esc(it.url) + '\')">Descargar</button>' +
+      '<button class="btn-a btn-rm" onclick="removeQR(' + it.id + ')">&#10005;</button>' +
+    '</div>' +
+  '</div>';
 }
 
 function getFileIcon(name) {
@@ -510,8 +586,7 @@ function getFileIcon(name) {
 
 function makeQR(elId, url, size) {
   const c = document.getElementById(elId);
-  if (!c) return;
-  c.innerHTML = '';
+  if (!c) return; c.innerHTML = '';
   try { new QRCode(c, { text: url, width: size, height: size, colorDark: '#000', colorLight: '#fff', correctLevel: QRCode.CorrectLevel.H }); } catch(e) {}
 }
 
@@ -540,6 +615,7 @@ function esc(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').re
 document.getElementById('urlIn').addEventListener('keydown', e => { if(e.key==='Enter') addQR(); });
 document.getElementById('nomIn').addEventListener('keydown', e => { if(e.key==='Enter') addQR(); });
 document.getElementById('creatorIn').addEventListener('keydown', e => { if(e.key==='Enter') addQR(); });
+document.getElementById('newFolderIn').addEventListener('keydown', e => { if(e.key==='Enter') addFolder(); });
 
 init();
 </script>
