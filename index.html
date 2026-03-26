@@ -656,7 +656,7 @@ function stampLogo(cv) {
   if (!logoImg.complete || !logoImg.naturalWidth) return;
   const ctx = cv.getContext('2d');
   // Logo is wide (ratio ~4:1), so use width-based sizing
-  const w = Math.round(cv.width * 0.32);
+  const w = Math.round(cv.width * 0.55);
   const h = Math.round(w * (logoImg.naturalHeight / logoImg.naturalWidth));
   const pad = Math.round(h * 0.25);
   const x = (cv.width - w) / 2;
