@@ -67,10 +67,15 @@ select option{background:var(--surface2);color:var(--text)}
 .upload-txt strong{color:var(--accent2)}
 .upload-file{font-size:12px;color:var(--ok);font-weight:600;word-break:break-all}
 .upload-hint{font-size:10px;color:var(--muted);margin-top:4px}
-.upload-clear{display:none;position:absolute;top:8px;right:8px;background:var(--surface);border:1px solid var(--border);border-radius:50%;width:24px;height:24px;color:var(--danger);font-size:14px;cursor:pointer;align-items:center;justify-content:center;transition:all .15s;padding:0;line-height:1}
-.upload-clear:hover{background:var(--danger);color:#fff;border-color:var(--danger)}
-.upload-zone.has-file .upload-clear{display:flex}
 .upload-zone{position:relative}
+.file-list{display:flex;flex-direction:column;gap:6px;margin-top:8px}
+.file-item{display:flex;align-items:center;justify-content:space-between;background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:8px 12px;font-size:12px;animation:slideIn .2s ease}
+.file-item-info{display:flex;align-items:center;gap:8px;min-width:0;flex:1}
+.file-item-name{color:var(--text);font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.file-item-size{color:var(--muted);font-family:"Space Mono",monospace;font-size:10px;flex-shrink:0}
+.file-item-type{background:rgba(6,182,212,.1);border:1px solid rgba(6,182,212,.3);color:var(--accent2);font-size:9px;font-weight:700;padding:2px 6px;border-radius:99px;flex-shrink:0}
+.file-item-rm{background:none;border:none;color:var(--muted);font-size:16px;cursor:pointer;padding:0 0 0 8px;transition:color .15s;flex-shrink:0}
+.file-item-rm:hover{color:var(--danger)}
 
 /* Buttons */
 .btn{border:none;border-radius:10px;padding:11px 20px;font-family:Syne,sans-serif;font-size:13px;font-weight:700;cursor:pointer;transition:all .15s;display:inline-flex;align-items:center;gap:6px}
@@ -216,9 +221,9 @@ select option{background:var(--surface2);color:var(--text)}
         <div class="upload-ico">&#128196;</div>
         <div class="upload-txt" id="uploadTxt">Arrastra archivos o <strong>haz clic para seleccionar</strong></div>
         <div class="upload-hint">Word, Excel, PowerPoint, PDF, imagenes y mas (max 50MB)</div>
-        <button type="button" class="upload-clear" id="uploadClear" onclick="event.stopPropagation(); clearFiles()">&#10005;</button>
       </div>
       <input type="file" id="fileIn" style="display:none" multiple accept=".pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.png,.jpg,.jpeg,.gif,.svg,.webp,.mp4,.zip,.rar,.txt,.csv">
+      <div class="file-list" id="fileList"></div>
     </div>
 
     <div class="err" id="errMsg">Completa todos los campos obligatorios</div>
@@ -298,29 +303,52 @@ dropZone.addEventListener('dragover', e => { e.preventDefault(); dropZone.classL
 dropZone.addEventListener('dragleave', () => dropZone.classList.remove('dragover'));
 dropZone.addEventListener('drop', e => {
   e.preventDefault(); dropZone.classList.remove('dragover');
-  if (e.dataTransfer.files.length) { fileIn.files = e.dataTransfer.files; handleFile(); }
+  if (e.dataTransfer.files.length) { selectedFiles = selectedFiles.concat(Array.from(e.dataTransfer.files)); renderFileList(); }
 });
 fileIn.addEventListener('change', handleFile);
 
 function handleFile() {
-  const files = Array.from(fileIn.files);
-  if (!files.length) return;
-  selectedFiles = files;
-  dropZone.classList.add('has-file');
-  if (files.length === 1) {
-    document.getElementById('uploadTxt').innerHTML = '<span class="upload-file">' + esc(files[0].name) + ' (' + formatSize(files[0].size) + ')</span>';
-    if (!document.getElementById('nomIn').value) document.getElementById('nomIn').value = files[0].name.replace(/\.[^.]+$/, '');
-  } else {
-    const totalSize = files.reduce((s, f) => s + f.size, 0);
-    document.getElementById('uploadTxt').innerHTML = '<span class="upload-file">' + files.length + ' archivos seleccionados (' + formatSize(totalSize) + ')</span>';
-  }
+  const newFiles = Array.from(fileIn.files);
+  if (!newFiles.length) return;
+  selectedFiles = selectedFiles.concat(newFiles);
+  renderFileList();
+}
+
+function removeFile(idx) {
+  selectedFiles.splice(idx, 1);
+  renderFileList();
 }
 
 function clearFiles() {
   selectedFiles = [];
   fileIn.value = '';
-  dropZone.classList.remove('has-file');
-  document.getElementById('uploadTxt').innerHTML = 'Arrastra archivos o <strong>haz clic para seleccionar</strong>';
+  renderFileList();
+}
+
+function renderFileList() {
+  const list = document.getElementById('fileList');
+  if (!selectedFiles.length) {
+    dropZone.classList.remove('has-file');
+    document.getElementById('uploadTxt').innerHTML = 'Arrastra archivos o <strong>haz clic para seleccionar</strong>';
+    list.innerHTML = '';
+    return;
+  }
+  dropZone.classList.add('has-file');
+  document.getElementById('uploadTxt').innerHTML = '<span class="upload-file">' + selectedFiles.length + ' archivo(s) listos</span>';
+  if (selectedFiles.length === 1 && !document.getElementById('nomIn').value) {
+    document.getElementById('nomIn').value = selectedFiles[0].name.replace(/\.[^.]+$/, '');
+  }
+  list.innerHTML = selectedFiles.map((f, i) => {
+    const ext = f.name.split('.').pop().toUpperCase();
+    return '<div class="file-item">' +
+      '<div class="file-item-info">' +
+        '<span class="file-item-type">' + esc(ext) + '</span>' +
+        '<span class="file-item-name">' + esc(f.name) + '</span>' +
+      '</div>' +
+      '<span class="file-item-size">' + formatSize(f.size) + '</span>' +
+      '<button class="file-item-rm" onclick="removeFile(' + i + ')">&#10005;</button>' +
+    '</div>';
+  }).join('');
 }
 
 function formatSize(b) {
@@ -558,8 +586,7 @@ async function addQR() {
 
     nomEl.value = ''; urlEl.value = '';
     selectedFiles = []; fileIn.value = '';
-    dropZone.classList.remove('has-file');
-    document.getElementById('uploadTxt').innerHTML = 'Arrastra archivos o <strong>haz clic para seleccionar</strong>';
+    renderFileList();
 
     allItems = await read();
     renderAll();
