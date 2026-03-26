@@ -124,6 +124,21 @@ select option{background:var(--surface2);color:var(--text)}
 .item-wrap.dragging{opacity:.4;transform:scale(.97)}
 .item{background:var(--surface2);border:1px solid var(--border);border-radius:12px;padding:12px 16px;display:flex;align-items:center;gap:14px;transition:all .2s;cursor:pointer}
 .item:hover{border-color:var(--accent);transform:translateX(3px)}
+.item-wrap.selected .item{border-color:var(--danger);background:rgba(239,68,68,.05)}
+/* Checkbox select */
+.item-check{width:18px;height:18px;border:2px solid var(--border);border-radius:5px;flex-shrink:0;display:flex;align-items:center;justify-content:center;transition:all .15s;cursor:pointer}
+.item-check:hover{border-color:var(--accent)}
+.item-wrap.selected .item-check{background:var(--danger);border-color:var(--danger)}
+.item-wrap.selected .item-check::after{content:'\\2713';color:#fff;font-size:12px;font-weight:700}
+/* Bulk action bar */
+.bulk-bar{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(80px);background:var(--surface);border:1px solid var(--danger);border-radius:14px;padding:10px 20px;display:flex;align-items:center;gap:14px;z-index:60;transition:all .3s;opacity:0;pointer-events:none;box-shadow:0 8px 32px rgba(0,0,0,.4)}
+.bulk-bar.show{transform:translateX(-50%) translateY(0);opacity:1;pointer-events:all}
+.bulk-count{font-size:13px;font-weight:700;color:var(--text)}
+.bulk-count strong{color:var(--danger)}
+.bulk-btn{background:rgba(239,68,68,.1);border:1px solid var(--danger);border-radius:10px;padding:8px 18px;color:var(--danger);font-family:Syne,sans-serif;font-size:12px;font-weight:700;cursor:pointer;transition:all .15s}
+.bulk-btn:hover{background:var(--danger);color:#fff}
+.bulk-cancel{background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:8px 18px;color:var(--muted);font-family:Syne,sans-serif;font-size:12px;font-weight:600;cursor:pointer;transition:all .15s}
+.bulk-cancel:hover{border-color:var(--text);color:var(--text)}
 @keyframes slideIn{from{opacity:0;transform:translateY(-8px)}to{opacity:1;transform:translateY(0)}}
 .thumb{width:56px;height:56px;flex-shrink:0;border-radius:8px;overflow:hidden;background:#fff;display:flex;align-items:center;justify-content:center}
 .thumb canvas,.thumb img{max-width:100%;max-height:100%}
@@ -215,7 +230,7 @@ select option{background:var(--surface2);color:var(--text)}
 
   <!-- Create QR Form -->
   <div class="card" id="formCard">
-    <label class="lbl">Nuevo codigo QR</label>
+    <div style="font-size:18px;font-weight:800;margin-bottom:14px;color:var(--text)">Nuevo codigo QR</div>
     <div class="row">
       <input type="text" id="creatorIn" placeholder="Tu nombre (obligatorio)" class="w-half" style="border-color:var(--accent)">
       <input type="text" id="nomIn" placeholder="Nombre del QR" class="w-half">
@@ -269,6 +284,11 @@ select option{background:var(--surface2);color:var(--text)}
   <div id="listContainer"></div>
 </div>
 
+<div class="bulk-bar" id="bulkBar">
+  <span class="bulk-count"><strong id="bulkCount">0</strong> seleccionados</span>
+  <button class="bulk-btn" onclick="bulkDelete()">Eliminar seleccionados</button>
+  <button class="bulk-cancel" onclick="clearSelection()">Cancelar</button>
+</div>
 <div class="modal-bg" id="modalBg" onclick="closeModal()">
   <div class="modal" onclick="event.stopPropagation()">
     <div class="modal-ico" id="modalIco">&#9888;</div>
@@ -295,6 +315,7 @@ let busy = false;
 let lastSig = '';
 let selectedFiles = [];
 let dragId = null;
+let selectedIds = new Set();
 
 function initTabs() {
   document.getElementById('tabs').innerHTML = SECTIONS.map(s =>
@@ -720,8 +741,10 @@ function renderItem(it) {
   const linkIcon = isFile ? '&#128196;' : '&#127760;';
   const linkText = isFile ? 'Abrir documento: ' + esc(it.file_name) : 'Abrir enlace';
 
-  return '<div class="item-wrap" draggable="true" ondragstart="onDragStart(event,' + it.id + ')" ondragend="onDragEnd(event)">' +
+  const sel = selectedIds.has(it.id) ? ' selected' : '';
+  return '<div class="item-wrap' + sel + '" data-id="' + it.id + '" draggable="true" ondragstart="onDragStart(event,' + it.id + ')" ondragend="onDragEnd(event)">' +
     '<div class="item" onclick="toggleDetail(this)">' +
+      '<div class="item-check" onclick="event.stopPropagation();toggleSelect(' + it.id + ')"></div>' +
       '<div class="thumb" id="qr' + it.id + '"></div>' +
       '<div class="info">' +
         '<div class="iname">' + esc(it.name) + '</div>' +
@@ -890,6 +913,45 @@ document.getElementById('urlIn').addEventListener('keydown', e => { if(e.key==='
 document.getElementById('nomIn').addEventListener('keydown', e => { if(e.key==='Enter') addQR(); });
 document.getElementById('creatorIn').addEventListener('keydown', e => { if(e.key==='Enter') addQR(); });
 document.getElementById('newFolderIn').addEventListener('keydown', e => { if(e.key==='Enter') addFolder(); });
+
+// Bulk selection
+function toggleSelect(id) {
+  if (selectedIds.has(id)) selectedIds.delete(id);
+  else selectedIds.add(id);
+  const wrap = document.querySelector('.item-wrap[data-id="' + id + '"]');
+  if (wrap) wrap.classList.toggle('selected', selectedIds.has(id));
+  updateBulkBar();
+}
+
+function updateBulkBar() {
+  const bar = document.getElementById('bulkBar');
+  document.getElementById('bulkCount').textContent = selectedIds.size;
+  bar.classList.toggle('show', selectedIds.size > 0);
+}
+
+function clearSelection() {
+  selectedIds.clear();
+  document.querySelectorAll('.item-wrap.selected').forEach(el => el.classList.remove('selected'));
+  updateBulkBar();
+}
+
+async function bulkDelete() {
+  const count = selectedIds.size;
+  const ok = await openModal('Eliminar ' + count + ' codigo(s) QR', 'Se eliminaran <strong>' + count + ' codigo(s) QR</strong> de forma permanente.<br>Esta accion no se puede deshacer.');
+  if (!ok) return;
+  try {
+    const ids = [...selectedIds];
+    for (const id of ids) {
+      const r = await fetch(BASE + '/qrcodes?id=eq.' + id, { method: 'DELETE', headers: HEADERS });
+      if (!r.ok) { const e = await r.json(); throw new Error(e.message || r.status); }
+    }
+    allItems = allItems.filter(i => !selectedIds.has(i.id));
+    selectedIds.clear();
+    updateBulkBar();
+    renderAll();
+    toast(count + ' QR(s) eliminados', 'ok');
+  } catch(e) { toast('Error: ' + e.message, 'err'); }
+}
 
 function toggleTheme() {
   const isLight = document.body.classList.toggle('light');
