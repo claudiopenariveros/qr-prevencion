@@ -627,7 +627,13 @@ function showFormErr(errEl, msg, inputEl) {
 }
 
 async function removeQR(id) {
-  if (!confirm('Eliminar este QR?')) return;
+  const item = allItems.find(i => i.id === id);
+  const name = item ? item.name : 'este QR';
+  const msg = item && item.file_name
+    ? 'Se eliminara el codigo QR y el documento <strong>' + esc(item.file_name) + '</strong> asociado.'
+    : 'Se eliminara este codigo QR de forma permanente.';
+  const ok = await openModal('Eliminar "' + name + '"', msg);
+  if (!ok) return;
   try {
     const r = await fetch(BASE + '/qrcodes?id=eq.' + id, { method: 'DELETE', headers: HEADERS });
     if (!r.ok) { const e = await r.json(); throw new Error(e.message || r.status); }
