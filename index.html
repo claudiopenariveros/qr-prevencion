@@ -143,6 +143,7 @@ select option{background:var(--surface2);color:var(--text)}
 <body>
 <div class="wrap">
   <header>
+    <div class="logo"><img src="logo.png" alt="Grupo MSI" style="height:42px;margin-bottom:16px"></div>
     <div class="badge"><span class="dot"></span> Prevencion de riesgo</div>
     <h1>Generador de <span>codigo QR</span></h1>
     <div class="status">
@@ -166,11 +167,7 @@ select option{background:var(--surface2);color:var(--text)}
       <input type="text" id="creatorIn" placeholder="Tu nombre (obligatorio)" class="w-half" style="border-color:var(--accent)">
       <input type="text" id="nomIn" placeholder="Nombre del QR" class="w-half">
     </div>
-    <div class="row">
-      <select id="subSel" class="w-full"></select>
-    </div>
-
-    <label class="lbl" style="margin-top:12px">Origen del QR</label>
+    <label class="lbl" style="margin-top:4px">Origen del QR</label>
     <div class="row" style="margin-bottom:6px">
       <label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:12px">
         <input type="radio" name="qrtype" value="url" checked onchange="toggleType()"> URL
@@ -279,15 +276,7 @@ function getFolders() {
   return [...folders].sort();
 }
 
-function updateFolderSelect() {
-  const folders = getFolders();
-  const sel = document.getElementById('subSel');
-  if (!folders.length) {
-    sel.innerHTML = '<option value="">-- Crea una carpeta primero --</option>';
-  } else {
-    sel.innerHTML = folders.map(f => '<option value="' + esc(f) + '">' + esc(f) + '</option>').join('');
-  }
-}
+function updateFolderSelect() {}
 
 function addFolder() {
   const inp = document.getElementById('newFolderIn');
@@ -434,11 +423,10 @@ async function addQR() {
   const errEl = document.getElementById('errMsg');
   const isFile = document.querySelector('input[name="qrtype"]:checked').value === 'file';
   const section = currentSection;
-  const subsection = document.getElementById('subSel').value || null;
+  const subsection = null;
 
   const creator = creatorEl.value.trim();
   if (!creator) { showFormErr(errEl, 'El nombre del creador es obligatorio', creatorEl); return; }
-  if (!subsection) { showFormErr(errEl, 'Selecciona una carpeta (crea una si no hay)'); return; }
 
   let url = '', fileName = null;
   if (isFile) {
@@ -519,6 +507,14 @@ function renderAll() {
 
   let html = '';
 
+  // Items without folder first (bandeja)
+  const noFolder = sectionItems.filter(i => !i.subsection || !folders.includes(i.subsection));
+  if (noFolder.length) {
+    html += '<div class="no-folder-items"><div class="no-folder-label">QR sin clasificar &mdash; arrastra a una carpeta</div><div class="list">';
+    noFolder.forEach(it => { html += renderItem(it); });
+    html += '</div></div>';
+  }
+
   // Render folders
   folders.forEach(f => {
     const fitems = sectionItems.filter(i => i.subsection === f);
@@ -543,14 +539,6 @@ function renderAll() {
     }
     html += '</div></div>';
   });
-
-  // Items without folder
-  const noFolder = sectionItems.filter(i => !i.subsection || !folders.includes(i.subsection));
-  if (noFolder.length) {
-    html += '<div class="no-folder-items"><div class="no-folder-label">Sin carpeta</div><div class="list">';
-    noFolder.forEach(it => { html += renderItem(it); });
-    html += '</div></div>';
-  }
 
   container.innerHTML = html;
   sectionItems.forEach(it => makeQR('qr' + it.id, it.url, 56));
