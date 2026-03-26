@@ -651,32 +651,46 @@ function getFileIcon(name) {
 const logoImg = new Image();
 logoImg.src = 'logo.png';
 
-function stampLogo(cv, logoSize) {
+function stampLogo(cv) {
   if (!logoImg.complete || !logoImg.naturalWidth) return;
   const ctx = cv.getContext('2d');
-  const s = logoSize || Math.round(cv.width * 0.22);
-  const pad = Math.round(s * 0.12);
-  const x = (cv.width - s) / 2;
-  const y = (cv.height - s) / 2;
+  // Logo is wide (ratio ~4:1), so use width-based sizing
+  const w = Math.round(cv.width * 0.32);
+  const h = Math.round(w * (logoImg.naturalHeight / logoImg.naturalWidth));
+  const pad = Math.round(h * 0.25);
+  const x = (cv.width - w) / 2;
+  const y = (cv.height - h) / 2;
+  const r = Math.round(h * 0.2);
   // white rounded rect background
-  const r = Math.round(s * 0.15);
   ctx.fillStyle = '#fff';
   ctx.beginPath();
   ctx.moveTo(x - pad + r, y - pad);
-  ctx.lineTo(x + s + pad - r, y - pad);
-  ctx.quadraticCurveTo(x + s + pad, y - pad, x + s + pad, y - pad + r);
-  ctx.lineTo(x + s + pad, y + s + pad - r);
-  ctx.quadraticCurveTo(x + s + pad, y + s + pad, x + s + pad - r, y + s + pad);
-  ctx.lineTo(x - pad + r, y + s + pad);
-  ctx.quadraticCurveTo(x - pad, y + s + pad, x - pad, y + s + pad - r);
+  ctx.lineTo(x + w + pad - r, y - pad);
+  ctx.quadraticCurveTo(x + w + pad, y - pad, x + w + pad, y - pad + r);
+  ctx.lineTo(x + w + pad, y + h + pad - r);
+  ctx.quadraticCurveTo(x + w + pad, y + h + pad, x + w + pad - r, y + h + pad);
+  ctx.lineTo(x - pad + r, y + h + pad);
+  ctx.quadraticCurveTo(x - pad, y + h + pad, x - pad, y + h + pad - r);
   ctx.lineTo(x - pad, y - pad + r);
   ctx.quadraticCurveTo(x - pad, y - pad, x - pad + r, y - pad);
   ctx.closePath();
   ctx.fill();
-  // draw logo with grey bg behind it
+  // grey bg matching logo's original background
   ctx.fillStyle = '#4a4a4a';
-  ctx.fillRect(x, y, s, s);
-  ctx.drawImage(logoImg, x, y, s, s);
+  const br = Math.round(h * 0.12);
+  ctx.beginPath();
+  ctx.moveTo(x + br, y);
+  ctx.lineTo(x + w - br, y);
+  ctx.quadraticCurveTo(x + w, y, x + w, y + br);
+  ctx.lineTo(x + w, y + h - br);
+  ctx.quadraticCurveTo(x + w, y + h, x + w - br, y + h);
+  ctx.lineTo(x + br, y + h);
+  ctx.quadraticCurveTo(x, y + h, x, y + h - br);
+  ctx.lineTo(x, y + br);
+  ctx.quadraticCurveTo(x, y, x + br, y);
+  ctx.closePath();
+  ctx.fill();
+  ctx.drawImage(logoImg, x, y, w, h);
 }
 
 function makeQR(elId, url, size) {
