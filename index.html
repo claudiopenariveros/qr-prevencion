@@ -129,7 +129,7 @@ select option{background:var(--surface2);color:var(--text)}
 .item-check{width:18px;height:18px;border:2px solid var(--border);border-radius:4px;flex-shrink:0;display:flex;align-items:center;justify-content:center;transition:all .15s;cursor:pointer}
 .item-check:hover{border-color:var(--muted)}
 .item-wrap.selected .item-check{background:var(--danger);border-color:var(--danger)}
-.item-wrap.selected .item-check::after{content:'\\2713';color:#fff;font-size:11px}
+.item-wrap.selected .item-check::after{content:'';display:block;width:8px;height:8px;background:#fff;border-radius:2px}
 /* Bulk action bar */
 .bulk-bar{position:fixed;bottom:20px;right:20px;z-index:60;display:none;align-items:center;gap:8px}
 .bulk-bar.show{display:flex}
