@@ -170,12 +170,6 @@ select option{background:var(--surface2);color:var(--text)}
 
   <div class="tabs" id="tabs"></div>
 
-  <!-- Create folder -->
-  <div class="create-folder">
-    <input type="text" id="newFolderIn" placeholder="Nombre de nueva carpeta...">
-    <button class="btn btn-sm btn-outline" onclick="addFolder()">+ Crear carpeta</button>
-  </div>
-
   <!-- Create QR Form -->
   <div class="card" id="formCard">
     <label class="lbl">Nuevo codigo QR</label>
@@ -210,6 +204,12 @@ select option{background:var(--surface2);color:var(--text)}
     <div class="row" style="margin-top:12px">
       <button class="btn btn-primary" id="btnGen" onclick="addQR()" style="width:100%">Generar QR</button>
     </div>
+  </div>
+
+  <!-- Create folder -->
+  <div class="create-folder">
+    <input type="text" id="newFolderIn" placeholder="Nombre de nueva carpeta...">
+    <button class="btn btn-sm btn-outline" onclick="addFolder()">+ Crear carpeta</button>
   </div>
 
   <!-- Stats -->
