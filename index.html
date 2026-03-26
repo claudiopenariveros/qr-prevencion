@@ -338,7 +338,8 @@ function renderFileList() {
   if (selectedFiles.length === 1 && !document.getElementById('nomIn').value) {
     document.getElementById('nomIn').value = selectedFiles[0].name.replace(/\.[^.]+$/, '');
   }
-  list.innerHTML = selectedFiles.map((f, i) => {
+  let html = selectedFiles.length > 1 ? '<div style="display:flex;justify-content:flex-end;margin-bottom:4px"><button class="btn-del-all" onclick="clearFiles()" style="font-size:10px;padding:4px 10px">Borrar todo</button></div>' : '';
+  html += selectedFiles.map((f, i) => {
     const ext = f.name.split('.').pop().toUpperCase();
     return '<div class="file-item">' +
       '<div class="file-item-info">' +
@@ -349,7 +350,7 @@ function renderFileList() {
       '<button class="file-item-rm" onclick="removeFile(' + i + ')">&#10005;</button>' +
     '</div>';
   }).join('');
-}
+  list.innerHTML = html;
 
 function formatSize(b) {
   if (b < 1024) return b + ' B';
