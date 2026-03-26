@@ -52,14 +52,11 @@ h1 span{background:linear-gradient(135deg,var(--accent),var(--accent2));-webkit-
 input[type="text"],input[type="url"]{flex:1;min-width:140px;background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:11px 14px;color:var(--text);font-family:"Space Mono",monospace;font-size:12px;outline:none;transition:border-color .2s}
 input:focus{border-color:var(--accent)!important;background:#1a1a28}
 input::placeholder{color:var(--muted)}
-select{background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:11px 14px;color:var(--text);font-family:Syne,sans-serif;font-size:12px;outline:none;cursor:pointer;transition:border-color .2s;appearance:none;-webkit-appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='%236b6b8a'%3E%3Cpath d='M6 8L1 3h10z'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 12px center;padding-right:32px}
-select:focus{border-color:var(--accent)}
-select option{background:var(--surface2);color:var(--text)}
 .w-full{width:100%}
 .w-half{width:calc(50% - 4px)}
 
 /* File upload */
-.upload-zone{border:2px dashed var(--border);border-radius:12px;padding:20px;text-align:center;cursor:pointer;transition:all .2s;background:var(--surface2)}
+.upload-zone{position:relative;border:2px dashed var(--border);border-radius:12px;padding:20px;text-align:center;cursor:pointer;transition:all .2s;background:var(--surface2)}
 .upload-zone:hover{border-color:var(--accent);background:rgba(246,147,30,.04)}
 .upload-zone.dragover{border-color:var(--accent);background:rgba(246,147,30,.07)}
 .upload-zone.has-file{border-color:var(--ok);border-style:solid}
@@ -68,7 +65,6 @@ select option{background:var(--surface2);color:var(--text)}
 .upload-txt strong{color:var(--accent2)}
 .upload-file{font-size:12px;color:var(--ok);font-weight:600;word-break:break-all}
 .upload-hint{font-size:10px;color:var(--muted);margin-top:4px}
-.upload-zone{position:relative}
 .file-list{display:flex;flex-direction:column;gap:6px;margin-top:8px}
 .file-item{display:flex;align-items:center;justify-content:space-between;background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:8px 12px;font-size:12px;animation:slideIn .2s ease}
 .file-item-info{display:flex;align-items:center;gap:8px;min-width:0;flex:1}
@@ -403,19 +399,13 @@ function getFolders() {
   return [...folders].sort();
 }
 
-function updateFolderSelect() {}
-
 function addFolder() {
   const inp = document.getElementById('newFolderIn');
   const v = inp.value.trim();
   if (!v) { inp.style.borderColor = 'var(--danger)'; setTimeout(() => inp.style.borderColor = '', 2000); return; }
   inp.value = '';
-  // We add a placeholder item so the folder appears, then remove it
-  // Actually, folders exist based on items. We'll create a "virtual" folder by adding a hidden marker
-  // Better approach: store folders in localStorage + DB items
   const existing = getFolders();
   if (existing.includes(v)) { toast('La carpeta "' + v + '" ya existe', 'err'); return; }
-  // Save to local virtual folders
   const vf = getVirtualFolders();
   if (!vf.includes(v)) { vf.push(v); setVirtualFolders(vf); }
   toast('Carpeta "' + v + '" creada', 'ok');
@@ -681,7 +671,6 @@ async function removeQR(id) {
 }
 
 function renderAll() {
-  updateFolderSelect();
   const sectionItems = allItems.filter(i => i.section === currentSection);
   const container = document.getElementById('listContainer');
   const empty = document.getElementById('empty');
@@ -735,19 +724,6 @@ function renderAll() {
   container.innerHTML = html;
   sectionItems.forEach(it => makeQR('qr' + it.id, it.url, 56));
   lastSig = JSON.stringify(allItems);
-}
-
-function formatDate(d) {
-  const parts = String(d).split(',');
-  if (parts.length >= 2) {
-    return '<div class="idate"><span class="idate-d">' + esc(parts[0].trim()) + '</span><span class="idate-h">' + esc(parts[1].trim()) + '</span></div>';
-  }
-  // fallback: try splitting by space for other formats
-  const sp = String(d).trim().split(' ');
-  if (sp.length >= 2) {
-    return '<div class="idate"><span class="idate-d">' + esc(sp[0]) + '</span><span class="idate-h">' + esc(sp.slice(1).join(' ')) + '</span></div>';
-  }
-  return '<div class="idate"><span class="idate-d">' + esc(d) + '</span></div>';
 }
 
 function renderItem(it) {
@@ -815,12 +791,6 @@ function toggleDetail(el) {
       if (it) makeQR('qrbig' + id, it.url, 160);
     }
   }
-}
-
-function getFileIcon(name) {
-  const ext = (name || '').split('.').pop().toLowerCase();
-  const icons = { pdf:'PDF', doc:'DOC', docx:'DOC', xls:'XLS', xlsx:'XLS', ppt:'PPT', pptx:'PPT', png:'IMG', jpg:'IMG', jpeg:'IMG', gif:'IMG', svg:'IMG', webp:'IMG', mp4:'VID', zip:'ZIP', rar:'ZIP', csv:'CSV', txt:'TXT' };
-  return icons[ext] || 'FILE';
 }
 
 function getFileType(name) {
