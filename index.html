@@ -67,6 +67,10 @@ select option{background:var(--surface2);color:var(--text)}
 .upload-txt strong{color:var(--accent2)}
 .upload-file{font-size:12px;color:var(--ok);font-weight:600;word-break:break-all}
 .upload-hint{font-size:10px;color:var(--muted);margin-top:4px}
+.upload-clear{display:none;position:absolute;top:8px;right:8px;background:var(--surface);border:1px solid var(--border);border-radius:50%;width:24px;height:24px;color:var(--danger);font-size:14px;cursor:pointer;align-items:center;justify-content:center;transition:all .15s;padding:0;line-height:1}
+.upload-clear:hover{background:var(--danger);color:#fff;border-color:var(--danger)}
+.upload-zone.has-file .upload-clear{display:flex}
+.upload-zone{position:relative}
 
 /* Buttons */
 .btn{border:none;border-radius:10px;padding:11px 20px;font-family:Syne,sans-serif;font-size:13px;font-weight:700;cursor:pointer;transition:all .15s;display:inline-flex;align-items:center;gap:6px}
@@ -210,10 +214,11 @@ select option{background:var(--surface2);color:var(--text)}
     <div id="fileWrap" style="display:none">
       <div class="upload-zone" id="dropZone" onclick="document.getElementById('fileIn').click()">
         <div class="upload-ico">&#128196;</div>
-        <div class="upload-txt" id="uploadTxt">Arrastra un archivo o <strong>haz clic para seleccionar</strong></div>
+        <div class="upload-txt" id="uploadTxt">Arrastra archivos o <strong>haz clic para seleccionar</strong></div>
         <div class="upload-hint">Word, Excel, PowerPoint, PDF, imagenes y mas (max 50MB)</div>
+        <button type="button" class="upload-clear" id="uploadClear" onclick="event.stopPropagation(); clearFiles()">&#10005;</button>
       </div>
-      <input type="file" id="fileIn" style="display:none" accept=".pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.png,.jpg,.jpeg,.gif,.svg,.webp,.mp4,.zip,.rar,.txt,.csv">
+      <input type="file" id="fileIn" style="display:none" multiple accept=".pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.png,.jpg,.jpeg,.gif,.svg,.webp,.mp4,.zip,.rar,.txt,.csv">
     </div>
 
     <div class="err" id="errMsg">Completa todos los campos obligatorios</div>
@@ -265,7 +270,7 @@ let currentSection = SECTIONS[0];
 let allItems = [];
 let busy = false;
 let lastSig = '';
-let selectedFile = null;
+let selectedFiles = [];
 let dragId = null;
 
 function initTabs() {
@@ -298,12 +303,24 @@ dropZone.addEventListener('drop', e => {
 fileIn.addEventListener('change', handleFile);
 
 function handleFile() {
-  const f = fileIn.files[0];
-  if (!f) return;
-  selectedFile = f;
+  const files = Array.from(fileIn.files);
+  if (!files.length) return;
+  selectedFiles = files;
   dropZone.classList.add('has-file');
-  document.getElementById('uploadTxt').innerHTML = '<span class="upload-file">' + esc(f.name) + ' (' + formatSize(f.size) + ')</span>';
-  if (!document.getElementById('nomIn').value) document.getElementById('nomIn').value = f.name.replace(/\.[^.]+$/, '');
+  if (files.length === 1) {
+    document.getElementById('uploadTxt').innerHTML = '<span class="upload-file">' + esc(files[0].name) + ' (' + formatSize(files[0].size) + ')</span>';
+    if (!document.getElementById('nomIn').value) document.getElementById('nomIn').value = files[0].name.replace(/\.[^.]+$/, '');
+  } else {
+    const totalSize = files.reduce((s, f) => s + f.size, 0);
+    document.getElementById('uploadTxt').innerHTML = '<span class="upload-file">' + files.length + ' archivos seleccionados (' + formatSize(totalSize) + ')</span>';
+  }
+}
+
+function clearFiles() {
+  selectedFiles = [];
+  fileIn.value = '';
+  dropZone.classList.remove('has-file');
+  document.getElementById('uploadTxt').innerHTML = 'Arrastra archivos o <strong>haz clic para seleccionar</strong>';
 }
 
 function formatSize(b) {
@@ -489,46 +506,64 @@ async function addQR() {
   const creator = creatorEl.value.trim();
   if (!creator) { showFormErr(errEl, 'El nombre del creador es obligatorio', creatorEl); return; }
 
-  let url = '', fileName = null;
   if (isFile) {
-    if (!selectedFile) { showFormErr(errEl, 'Selecciona un archivo'); return; }
-    fileName = selectedFile.name;
+    if (!selectedFiles.length) { showFormErr(errEl, 'Selecciona al menos un archivo'); return; }
   } else {
-    url = urlEl.value.trim();
-    if (!url) { showFormErr(errEl, 'Ingresa una URL valida', urlEl); return; }
-    try { const p = new URL(url); if (!['http:','https:'].includes(p.protocol)) throw 0; } catch(_) { showFormErr(errEl, 'URL invalida (debe ser https://...)'); return; }
+    const urlVal = urlEl.value.trim();
+    if (!urlVal) { showFormErr(errEl, 'Ingresa una URL valida', urlEl); return; }
+    try { const p = new URL(urlVal); if (!['http:','https:'].includes(p.protocol)) throw 0; } catch(_) { showFormErr(errEl, 'URL invalida (debe ser https://...)'); return; }
   }
-
-  const name = nomEl.value.trim() || (isFile ? selectedFile.name : new URL(url).hostname);
-  const now = new Date();
-  const fecha = now.toLocaleDateString('es-CL', { day: '2-digit', month: 'short', year: 'numeric' });
-  const hora = now.toLocaleTimeString('es-CL', { hour: '2-digit', minute: '2-digit' });
-  const date = fecha + ', ' + hora;
-  const id = Date.now();
 
   busy = true;
   const btn = document.getElementById('btnGen');
   btn.disabled = true;
-  btn.textContent = isFile ? 'Subiendo archivo...' : 'Guardando...';
   errEl.style.display = 'none';
 
   try {
-    if (isFile) url = await uploadFile(selectedFile);
-    const r = await fetch(BASE + '/qrcodes', {
-      method: 'POST',
-      headers: { ...HEADERS, 'Content-Type': 'application/json', 'Prefer': 'return=representation' },
-      body: JSON.stringify({ id, url, name, date, creator, section, subsection, file_name: fileName })
-    });
-    if (!r.ok) { const e = await r.json(); throw new Error(e.message || r.status); }
+    const now = new Date();
+    const fecha = now.toLocaleDateString('es-CL', { day: '2-digit', month: 'short', year: 'numeric' });
+    const hora = now.toLocaleTimeString('es-CL', { hour: '2-digit', minute: '2-digit' });
+    const date = fecha + ', ' + hora;
+
+    if (isFile) {
+      btn.textContent = 'Subiendo ' + selectedFiles.length + ' archivo(s)...';
+      for (let i = 0; i < selectedFiles.length; i++) {
+        const f = selectedFiles[i];
+        btn.textContent = 'Subiendo ' + (i + 1) + '/' + selectedFiles.length + '...';
+        const fileUrl = await uploadFile(f);
+        const fName = selectedFiles.length === 1
+          ? (nomEl.value.trim() || f.name.replace(/\.[^.]+$/, ''))
+          : (nomEl.value.trim() ? nomEl.value.trim() + ' - ' + f.name : f.name.replace(/\.[^.]+$/, ''));
+        const fileName = f.name;
+        const id = Date.now() + i;
+        const r = await fetch(BASE + '/qrcodes', {
+          method: 'POST',
+          headers: { ...HEADERS, 'Content-Type': 'application/json', 'Prefer': 'return=representation' },
+          body: JSON.stringify({ id, url: fileUrl, name: fName, date, creator, section, subsection, file_name: fileName })
+        });
+        if (!r.ok) { const e = await r.json(); throw new Error(e.message || r.status); }
+      }
+    } else {
+      btn.textContent = 'Guardando...';
+      const url = urlEl.value.trim();
+      const name = nomEl.value.trim() || new URL(url).hostname;
+      const id = Date.now();
+      const r = await fetch(BASE + '/qrcodes', {
+        method: 'POST',
+        headers: { ...HEADERS, 'Content-Type': 'application/json', 'Prefer': 'return=representation' },
+        body: JSON.stringify({ id, url, name, date, creator, section, subsection, file_name: null })
+      });
+      if (!r.ok) { const e = await r.json(); throw new Error(e.message || r.status); }
+    }
 
     nomEl.value = ''; urlEl.value = '';
-    selectedFile = null; fileIn.value = '';
+    selectedFiles = []; fileIn.value = '';
     dropZone.classList.remove('has-file');
-    document.getElementById('uploadTxt').innerHTML = 'Arrastra un archivo o <strong>haz clic para seleccionar</strong>';
+    document.getElementById('uploadTxt').innerHTML = 'Arrastra archivos o <strong>haz clic para seleccionar</strong>';
 
     allItems = await read();
     renderAll();
-    toast('QR creado y compartido', 'ok');
+    toast(isFile && selectedFiles.length > 1 ? 'QRs creados y compartidos' : 'QR creado y compartido', 'ok');
   } catch(e) {
     toast('Error: ' + e.message, 'err');
   } finally {
