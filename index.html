@@ -582,6 +582,13 @@ async function addQR() {
     try { const p = new URL(urlVal); if (!['http:','https:'].includes(p.protocol)) throw 0; } catch(_) { showFormErr(errEl, 'URL invalida (debe ser https://...)'); return; }
   }
 
+  // Si hay mas de 1 archivo, preguntar modo
+  let multiMode = 'individual';
+  if (isFile && selectedFiles.length > 1) {
+    multiMode = await askMultiMode(selectedFiles.length);
+    if (!multiMode) return;
+  }
+
   busy = true;
   const btn = document.getElementById('btnGen');
   btn.disabled = true;
@@ -593,8 +600,27 @@ async function addQR() {
     const hora = now.toLocaleTimeString('es-CL', { hour: '2-digit', minute: '2-digit' });
     const date = fecha + ', ' + hora;
 
-    if (isFile) {
-      btn.textContent = 'Subiendo ' + selectedFiles.length + ' archivo(s)...';
+    if (isFile && multiMode === 'group') {
+      // Subir todos y crear una pagina indice
+      btn.textContent = 'Subiendo archivos...';
+      const fileUrls = [];
+      for (let i = 0; i < selectedFiles.length; i++) {
+        btn.textContent = 'Subiendo ' + (i + 1) + '/' + selectedFiles.length + '...';
+        const fUrl = await uploadFile(selectedFiles[i]);
+        fileUrls.push({ name: selectedFiles[i].name, url: fUrl, size: selectedFiles[i].size });
+      }
+      btn.textContent = 'Creando carpeta QR...';
+      const groupName = nomEl.value.trim() || 'Documentos ' + section;
+      const indexUrl = await createIndexPage(groupName, creator, date, fileUrls);
+      const id = Date.now();
+      const r = await fetch(BASE + '/qrcodes', {
+        method: 'POST',
+        headers: { ...HEADERS, 'Content-Type': 'application/json', 'Prefer': 'return=representation' },
+        body: JSON.stringify({ id, url: indexUrl, name: groupName, date, creator, section, subsection, file_name: selectedFiles.length + ' archivos' })
+      });
+      if (!r.ok) { const e = await r.json(); throw new Error(e.message || r.status); }
+    } else if (isFile) {
+      btn.textContent = 'Subiendo archivo(s)...';
       for (let i = 0; i < selectedFiles.length; i++) {
         const f = selectedFiles[i];
         btn.textContent = 'Subiendo ' + (i + 1) + '/' + selectedFiles.length + '...';
@@ -602,12 +628,11 @@ async function addQR() {
         const fName = selectedFiles.length === 1
           ? (nomEl.value.trim() || f.name.replace(/\.[^.]+$/, ''))
           : (nomEl.value.trim() ? nomEl.value.trim() + ' - ' + f.name : f.name.replace(/\.[^.]+$/, ''));
-        const fileName = f.name;
         const id = Date.now() + i;
         const r = await fetch(BASE + '/qrcodes', {
           method: 'POST',
           headers: { ...HEADERS, 'Content-Type': 'application/json', 'Prefer': 'return=representation' },
-          body: JSON.stringify({ id, url: fileUrl, name: fName, date, creator, section, subsection, file_name: fileName })
+          body: JSON.stringify({ id, url: fileUrl, name: fName, date, creator, section, subsection, file_name: f.name })
         });
         if (!r.ok) { const e = await r.json(); throw new Error(e.message || r.status); }
       }
@@ -910,6 +935,71 @@ document.getElementById('urlIn').addEventListener('keydown', e => { if(e.key==='
 document.getElementById('nomIn').addEventListener('keydown', e => { if(e.key==='Enter') addQR(); });
 document.getElementById('creatorIn').addEventListener('keydown', e => { if(e.key==='Enter') addQR(); });
 document.getElementById('newFolderIn').addEventListener('keydown', e => { if(e.key==='Enter') addFolder(); });
+
+// Multi-file mode selector
+function askMultiMode(count) {
+  return new Promise(resolve => {
+    const bg = document.getElementById('modalBg');
+    document.getElementById('modalIco').innerHTML = '&#128196;';
+    document.getElementById('modalTitle').textContent = count + ' archivos seleccionados';
+    document.getElementById('modalMsg').innerHTML =
+      'Elige como crear los codigos QR:<br><br>' +
+      '<div style="display:flex;flex-direction:column;gap:8px">' +
+        '<button id="modeIndiv" style="padding:12px;border-radius:10px;border:1px solid var(--border);background:var(--surface2);color:var(--text);cursor:pointer;font-family:Syne,sans-serif;font-size:13px;text-align:left;transition:border-color .15s">' +
+          '<strong>Un QR por archivo</strong><br><span style="font-size:11px;color:var(--muted)">Se crearan ' + count + ' codigos QR independientes</span>' +
+        '</button>' +
+        '<button id="modeGroup" style="padding:12px;border-radius:10px;border:1px solid var(--border);background:var(--surface2);color:var(--text);cursor:pointer;font-family:Syne,sans-serif;font-size:13px;text-align:left;transition:border-color .15s">' +
+          '<strong>Un QR con todos los archivos</strong><br><span style="font-size:11px;color:var(--muted)">Se creara una carpeta con los ' + count + ' documentos dentro</span>' +
+        '</button>' +
+      '</div>';
+    document.getElementById('modalBtn').style.display = 'none';
+    document.querySelector('.modal-cancel').textContent = 'Cancelar';
+    bg.classList.add('show');
+    const cleanup = () => {
+      bg.classList.remove('show');
+      document.getElementById('modalBtn').style.display = '';
+      document.getElementById('modalIco').innerHTML = '&#9888;';
+    };
+    document.getElementById('modeIndiv').onclick = () => { cleanup(); resolve('individual'); };
+    document.getElementById('modeGroup').onclick = () => { cleanup(); resolve('group'); };
+    document.querySelector('.modal-cancel').onclick = () => { cleanup(); resolve(null); };
+    modalResolver = () => { cleanup(); resolve(null); };
+  });
+}
+
+async function createIndexPage(title, creator, date, files) {
+  const html = '<!DOCTYPE html><html lang="es"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">' +
+    '<title>' + esc(title) + '</title>' +
+    '<style>*{margin:0;padding:0;box-sizing:border-box}body{font-family:Arial,sans-serif;background:#f5f5f5;padding:20px;min-height:100vh}' +
+    '.wrap{max-width:600px;margin:0 auto}.header{background:#4a4a4a;color:#fff;padding:20px;border-radius:12px 12px 0 0;text-align:center}' +
+    '.header h1{font-size:20px;margin-bottom:4px}.header p{font-size:12px;opacity:.7}' +
+    '.list{background:#fff;border-radius:0 0 12px 12px;overflow:hidden}' +
+    '.file{display:flex;align-items:center;padding:14px 18px;border-bottom:1px solid #eee;text-decoration:none;color:#333;transition:background .15s}' +
+    '.file:hover{background:#f0f7ff}.file:last-child{border-bottom:none}' +
+    '.ico{width:36px;height:36px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:#fff;margin-right:12px;flex-shrink:0}' +
+    '.name{flex:1;font-size:14px;font-weight:600}.size{font-size:11px;color:#999;margin-left:8px}' +
+    '.footer{text-align:center;padding:16px;font-size:11px;color:#999}</style></head><body><div class="wrap">' +
+    '<div class="header"><h1>' + esc(title) + '</h1><p>Creado por ' + esc(creator) + ' - ' + esc(date) + '</p></div>' +
+    '<div class="list">' +
+    files.map(f => {
+      const ext = f.name.split('.').pop().toUpperCase();
+      const colors = {PDF:'#e74c3c',DOC:'#2b579a',DOCX:'#2b579a',XLS:'#217346',XLSX:'#217346',PPT:'#d24726',PPTX:'#d24726',PNG:'#8e44ad',JPG:'#8e44ad',JPEG:'#8e44ad'};
+      const bg = colors[ext] || '#555';
+      return '<a class="file" href="' + esc(f.url) + '" target="_blank"><div class="ico" style="background:' + bg + '">' + ext + '</div><span class="name">' + esc(f.name) + '</span><span class="size">' + formatSize(f.size) + '</span></a>';
+    }).join('') +
+    '</div><div class="footer">Grupo MSI - Prevencion de Riesgo</div></div></body></html>';
+
+  const blob = new Blob([html], { type: 'text/html' });
+  const ts = Date.now();
+  const path = currentSection + '/' + ts + '_index.html';
+  const r = await fetch(STORAGE + '/object/documentos/' + encodeURIComponent(path), {
+    method: 'POST',
+    headers: { ...HEADERS, 'Content-Type': 'text/html', 'x-upsert': 'true' },
+    body: blob
+  });
+  if (!r.ok) { const e = await r.json().catch(() => ({})); throw new Error(e.message || 'Error creando pagina'); }
+  return STORAGE + '/object/public/documentos/' + encodeURIComponent(path);
+}
 
 // Bulk selection
 function toggleSelect(id) {
