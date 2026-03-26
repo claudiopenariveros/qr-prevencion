@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Generador de codigo QR</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
 <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Syne:wght@400;600;800&display=swap" rel="stylesheet">
 <style>
 :root{--bg:#0a0a0f;--surface:#13131a;--surface2:#1c1c28;--border:#2a2a3d;--accent:#F6931E;--accent2:#06b6d4;--text:#e8e8f0;--muted:#6b6b8a;--ok:#10b981;--danger:#ef4444;--green:#22c55e}
@@ -601,22 +602,15 @@ async function addQR() {
     const date = fecha + ', ' + hora;
 
     if (isFile && multiMode === 'group') {
-      // Subir todos y crear una pagina indice
-      btn.textContent = 'Subiendo archivos...';
-      const fileUrls = [];
-      for (let i = 0; i < selectedFiles.length; i++) {
-        btn.textContent = 'Subiendo ' + (i + 1) + '/' + selectedFiles.length + '...';
-        const fUrl = await uploadFile(selectedFiles[i]);
-        fileUrls.push({ name: selectedFiles[i].name, url: fUrl, size: selectedFiles[i].size });
-      }
-      btn.textContent = 'Creando carpeta QR...';
+      btn.textContent = 'Creando ZIP...';
       const groupName = nomEl.value.trim() || 'Documentos ' + section;
-      const indexUrl = await createIndexPage(groupName, creator, date, fileUrls);
+      const zipFiles = selectedFiles.map(f => ({ name: f.name, file: f }));
+      const zipUrl = await createZipFile(groupName, zipFiles);
       const id = Date.now();
       const r = await fetch(BASE + '/qrcodes', {
         method: 'POST',
         headers: { ...HEADERS, 'Content-Type': 'application/json', 'Prefer': 'return=representation' },
-        body: JSON.stringify({ id, url: indexUrl, name: groupName, date, creator, section, subsection, file_name: selectedFiles.length + ' archivos' })
+        body: JSON.stringify({ id, url: zipUrl, name: groupName, date, creator, section, subsection, file_name: groupName + '.zip (' + selectedFiles.length + ' archivos)' })
       });
       if (!r.ok) { const e = await r.json(); throw new Error(e.message || r.status); }
     } else if (isFile) {
@@ -967,37 +961,21 @@ function askMultiMode(count) {
   });
 }
 
-async function createIndexPage(title, creator, date, files) {
-  const html = '<!DOCTYPE html><html lang="es"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">' +
-    '<title>' + esc(title) + '</title>' +
-    '<style>*{margin:0;padding:0;box-sizing:border-box}body{font-family:Arial,sans-serif;background:#f5f5f5;padding:20px;min-height:100vh}' +
-    '.wrap{max-width:600px;margin:0 auto}.header{background:#4a4a4a;color:#fff;padding:20px;border-radius:12px 12px 0 0;text-align:center}' +
-    '.header h1{font-size:20px;margin-bottom:4px}.header p{font-size:12px;opacity:.7}' +
-    '.list{background:#fff;border-radius:0 0 12px 12px;overflow:hidden}' +
-    '.file{display:flex;align-items:center;padding:14px 18px;border-bottom:1px solid #eee;text-decoration:none;color:#333;transition:background .15s}' +
-    '.file:hover{background:#f0f7ff}.file:last-child{border-bottom:none}' +
-    '.ico{width:36px;height:36px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:#fff;margin-right:12px;flex-shrink:0}' +
-    '.name{flex:1;font-size:14px;font-weight:600}.size{font-size:11px;color:#999;margin-left:8px}' +
-    '.footer{text-align:center;padding:16px;font-size:11px;color:#999}</style></head><body><div class="wrap">' +
-    '<div class="header"><h1>' + esc(title) + '</h1><p>Creado por ' + esc(creator) + ' - ' + esc(date) + '</p></div>' +
-    '<div class="list">' +
-    files.map(f => {
-      const ext = f.name.split('.').pop().toUpperCase();
-      const colors = {PDF:'#e74c3c',DOC:'#2b579a',DOCX:'#2b579a',XLS:'#217346',XLSX:'#217346',PPT:'#d24726',PPTX:'#d24726',PNG:'#8e44ad',JPG:'#8e44ad',JPEG:'#8e44ad'};
-      const bg = colors[ext] || '#555';
-      return '<a class="file" href="' + esc(f.url) + '" target="_blank"><div class="ico" style="background:' + bg + '">' + ext + '</div><span class="name">' + esc(f.name) + '</span><span class="size">' + formatSize(f.size) + '</span></a>';
-    }).join('') +
-    '</div><div class="footer">Grupo MSI - Prevencion de Riesgo</div></div></body></html>';
-
-  const blob = new Blob([html], { type: 'text/html' });
+async function createZipFile(title, files) {
+  const zip = new JSZip();
+  for (const f of files) {
+    zip.file(f.name, f.file);
+  }
+  const blob = await zip.generateAsync({ type: 'blob' });
   const ts = Date.now();
-  const path = currentSection + '/' + ts + '_index.html';
+  const safeName = title.replace(/[^a-zA-Z0-9._-]/g, '_');
+  const path = currentSection + '/' + ts + '_' + safeName + '.zip';
   const r = await fetch(STORAGE + '/object/documentos/' + encodeURIComponent(path), {
     method: 'POST',
-    headers: { ...HEADERS, 'Content-Type': 'text/html', 'x-upsert': 'true' },
+    headers: { ...HEADERS, 'Content-Type': 'application/zip', 'x-upsert': 'true' },
     body: blob
   });
-  if (!r.ok) { const e = await r.json().catch(() => ({})); throw new Error(e.message || 'Error creando pagina'); }
+  if (!r.ok) { const e = await r.json().catch(() => ({})); throw new Error(e.message || 'Error subiendo ZIP'); }
   return STORAGE + '/object/public/documentos/' + encodeURIComponent(path);
 }
 
