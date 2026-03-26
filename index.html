@@ -945,11 +945,11 @@ function askMultiMode(count) {
     document.getElementById('modalMsg').innerHTML =
       'Elige como crear los codigos QR:<br><br>' +
       '<div style="display:flex;flex-direction:column;gap:8px">' +
-        '<button id="modeIndiv" style="padding:12px;border-radius:10px;border:1px solid var(--border);background:var(--surface2);color:var(--text);cursor:pointer;font-family:Syne,sans-serif;font-size:13px;text-align:left;transition:border-color .15s">' +
-          '<strong>Un QR por archivo</strong><br><span style="font-size:11px;color:var(--muted)">Se crearan ' + count + ' codigos QR independientes</span>' +
+        '<button id="modeIndiv" style="padding:12px;border-radius:10px;border:1px solid rgba(246,147,30,.3);background:rgba(246,147,30,.05);color:var(--text);cursor:pointer;font-family:Syne,sans-serif;font-size:13px;text-align:left;transition:border-color .15s">' +
+          '<strong style="color:var(--accent)">Un QR por archivo</strong><br><span style="font-size:11px;color:var(--muted)">Se crearan ' + count + ' codigos QR independientes</span>' +
         '</button>' +
-        '<button id="modeGroup" style="padding:12px;border-radius:10px;border:1px solid var(--border);background:var(--surface2);color:var(--text);cursor:pointer;font-family:Syne,sans-serif;font-size:13px;text-align:left;transition:border-color .15s">' +
-          '<strong>Un QR con todos los archivos</strong><br><span style="font-size:11px;color:var(--muted)">Se creara una carpeta con los ' + count + ' documentos dentro</span>' +
+        '<button id="modeGroup" style="padding:12px;border-radius:10px;border:1px solid rgba(246,147,30,.3);background:rgba(246,147,30,.05);color:var(--text);cursor:pointer;font-family:Syne,sans-serif;font-size:13px;text-align:left;transition:border-color .15s">' +
+          '<strong style="color:var(--accent)">Un QR con todos los archivos</strong><br><span style="font-size:11px;color:var(--muted)">Se creara una carpeta con los ' + count + ' documentos dentro</span>' +
         '</button>' +
       '</div>';
     document.getElementById('modalBtn').style.display = 'none';
