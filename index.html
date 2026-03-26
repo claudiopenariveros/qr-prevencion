@@ -110,6 +110,7 @@ select option{background:var(--surface2);color:var(--text)}
 .iname{font-size:13px;font-weight:600;margin-bottom:2px;color:var(--text)}
 .iurl{font-family:"Space Mono",monospace;font-size:10px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .imeta{font-size:10px;color:var(--muted);margin-top:3px;display:flex;align-items:center;gap:5px;flex-wrap:wrap}
+.idate{font-size:13px;font-family:"Space Mono",monospace;color:var(--text);font-weight:600}
 .ibadge{display:inline-flex;align-items:center;gap:3px;border-radius:999px;padding:2px 7px;font-size:9px;font-weight:600}
 .ibadge-ok{background:rgba(16,185,129,.1);border:1px solid rgba(16,185,129,.3);color:var(--ok)}
 .ibadge-file{background:rgba(6,182,212,.1);border:1px solid rgba(6,182,212,.3);color:var(--accent2)}
@@ -556,7 +557,7 @@ function renderItem(it) {
         '<span class="ibadge ibadge-user">' + esc(it.creator || '?') + '</span>' +
         fileIcon +
         '<span class="ibadge ibadge-ok">Sin vencimiento</span>' +
-        esc(it.date) +
+        '<span class="idate">' + esc(it.date) + '</span>' +
       '</div>' +
     '</div>' +
     '<div class="acts">' +
