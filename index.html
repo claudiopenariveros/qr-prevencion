@@ -143,6 +143,21 @@ select option{background:var(--surface2);color:var(--text)}
 .toast.err-t{border:1px solid var(--danger);color:var(--danger)}
 .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
 
+/* Modal confirmacion */
+.modal-bg{position:fixed;inset:0;background:rgba(0,0,0,.65);z-index:200;display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity .2s}
+.modal-bg.show{opacity:1;pointer-events:all}
+.modal{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:28px 24px;max-width:420px;width:90%;text-align:center;transform:scale(.95);transition:transform .2s}
+.modal-bg.show .modal{transform:scale(1)}
+.modal-ico{font-size:36px;margin-bottom:12px}
+.modal-title{font-size:16px;font-weight:800;margin-bottom:8px;color:var(--text)}
+.modal-msg{font-size:13px;color:var(--muted);margin-bottom:20px;line-height:1.5}
+.modal-msg strong{color:var(--danger);font-weight:700}
+.modal-btns{display:flex;gap:10px;justify-content:center}
+.modal-cancel{background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:10px 24px;color:var(--text);font-family:Syne,sans-serif;font-size:13px;font-weight:600;cursor:pointer;transition:all .15s}
+.modal-cancel:hover{border-color:var(--text)}
+.modal-confirm{background:rgba(239,68,68,.1);border:1px solid var(--danger);border-radius:10px;padding:10px 24px;color:var(--danger);font-family:Syne,sans-serif;font-size:13px;font-weight:700;cursor:pointer;transition:all .15s}
+.modal-confirm:hover{background:var(--danger);color:#fff}
+
 @media(max-width:640px){
   .row{flex-direction:column}
   .w-half{width:100%}
@@ -225,6 +240,17 @@ select option{background:var(--surface2);color:var(--text)}
   <div id="listContainer"></div>
 </div>
 
+<div class="modal-bg" id="modalBg" onclick="closeModal()">
+  <div class="modal" onclick="event.stopPropagation()">
+    <div class="modal-ico" id="modalIco">&#9888;</div>
+    <div class="modal-title" id="modalTitle"></div>
+    <div class="modal-msg" id="modalMsg"></div>
+    <div class="modal-btns">
+      <button class="modal-cancel" onclick="closeModal()">Cancelar</button>
+      <button class="modal-confirm" id="modalBtn" onclick="confirmModal()">Eliminar</button>
+    </div>
+  </div>
+</div>
 <div class="toast" id="toast"></div>
 
 <script>
@@ -324,15 +350,33 @@ function getAllFolders() {
   return [...all].sort();
 }
 
+let modalResolver = null;
+function openModal(title, msg) {
+  document.getElementById('modalTitle').textContent = title;
+  document.getElementById('modalMsg').innerHTML = msg;
+  document.getElementById('modalBg').classList.add('show');
+  return new Promise(resolve => { modalResolver = resolve; });
+}
+function closeModal() {
+  document.getElementById('modalBg').classList.remove('show');
+  if (modalResolver) { modalResolver(false); modalResolver = null; }
+}
+function confirmModal() {
+  document.getElementById('modalBg').classList.remove('show');
+  if (modalResolver) { modalResolver(true); modalResolver = null; }
+}
+
 async function deleteFolder(folderName) {
   const items = allItems.filter(i => i.section === currentSection && i.subsection === folderName);
-  let msg = 'Eliminar la carpeta "' + folderName + '"?';
-  if (items.length) msg += '\n\nSe eliminaran ' + items.length + ' codigo(s) QR dentro de esta carpeta.';
-  if (!confirm(msg)) return;
-  if (items.length && !confirm('CONFIRMAR: Estas seguro? Esta accion no se puede deshacer. Se eliminaran todos los codigos QR de "' + folderName + '".')) return;
+  const count = items.length;
+  const msg = count
+    ? 'Se eliminaran <strong>' + count + ' codigo(s) QR</strong> dentro de esta carpeta.<br>Esta accion no se puede deshacer.'
+    : 'Esta carpeta esta vacia y sera eliminada.';
+  const ok = await openModal('Eliminar "' + folderName + '"', msg);
+  if (!ok) return;
 
   try {
-    if (items.length) {
+    if (count) {
       const r = await fetch(BASE + '/qrcodes?section=eq.' + encodeURIComponent(currentSection) + '&subsection=eq.' + encodeURIComponent(folderName), { method: 'DELETE', headers: HEADERS });
       if (!r.ok) { const e = await r.json(); throw new Error(e.message); }
       allItems = allItems.filter(i => !(i.section === currentSection && i.subsection === folderName));
